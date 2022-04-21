@@ -11,11 +11,14 @@ function ViewEditDialog({
 }: ViewEditDialogProps) {
     const [res, setRes] = useState("hmm");
     function callRust() {
-        invoke<string>('my_custom_command')
+        invoke<string>('create_job', {path: "C:\\scripts"})
         .then((a1) => {
             console.log("ret: ", a1);
-            setRes(a1);
+            setRes("OK " + a1);
         })
+        .catch((e) => {
+            setRes(e + '');
+        });
     }
     return (
         <div className="ViewEditDialog dialog">
