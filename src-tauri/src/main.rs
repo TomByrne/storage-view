@@ -7,29 +7,12 @@ use fstat::options::FileStats;
 use fstat::options::{Handlers, Options as FStatOptions, OutputOption};
 use fstat::run;
 use fstat::systems::FileSystem;
-use serde::Deserialize;
 use std::path::Path;
 use std::sync::Arc;
-use tauri::{App, AppHandle, Manager};
+use tauri::{AppHandle, Manager};
 
 fn main() {
   tauri::Builder::default()
-    // .setup(|app| {
-    //   app.listen_global("create_job", |event| {
-    //     let emit = |e:&str, s:String| {
-    //       app.emit_all(e, s);
-    //     };
-    //     if let Some(json_str) = event.payload() {
-    //       let res = serde_json::from_str::<CreateJobRequest>(json_str);
-    //       if let Ok(request) = res {
-    //         create_job(&emit, request.id, request.path);
-    //       } else if let Err(error) = res {
-    //         println!("Failed to parse create_job request: {}", error);
-    //       }
-    //     }
-    //   });
-    //   Ok(())
-    // })
     .invoke_handler(tauri::generate_handler![create_job])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
@@ -54,6 +37,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   fn prog_handler(fs: FileStats, data: &JobData) {
     let json_str = serde_json::json!({
       "job": data.job,
+      "name": fs.name,
       "path": fs.path,
       "size_b": fs.size_b,
     });
@@ -88,9 +72,3 @@ struct JobData {
   job: i32,
   handle: AppHandle,
 }
-
-// #[derive(Deserialize, Debug)]
-// struct CreateJobRequest {
-//   id: i32,
-//   path: String,
-// }
