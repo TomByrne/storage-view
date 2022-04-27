@@ -22,10 +22,11 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "cross-env BROWSER=none react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "yarn tauri dev",
+    "react:start": "cross-env BROWSER=none react-scripts start",
+    "react:build": "react-scripts build",
+    "react:test": "react-scripts test",
+    "react:eject": "react-scripts eject",
     "tauri": "tauri"
   },
   "eslintConfig": {

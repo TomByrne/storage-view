@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './ViewEditDialog.css';
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke,  } from '@tauri-apps/api/tauri'
+import { listen } from '@tauri-apps/api/event';
 
 interface ViewEditDialogProps {
     view?: string;
 }
 
+let lastJobId = 0;
+
 function ViewEditDialog({
     view
 }: ViewEditDialogProps) {
-    const [res, setRes] = useState("hmm");
+    let jobId: number | undefined;
+
+    const [res, setRes] = useState("<no result yet>");
+
+    useEffect(() => {
+        const unlisten = listen('create_job/prog', event => {
+            console.warn("create_job/prog: ", event);
+        })
+    
+        return () => {
+            unlisten.then((f) => f());
+        };
+    }, []);
+
     function callRust() {
-        invoke<string>('create_job', {path: "C:\\scripts"})
+        let id = (lastJobId++);
+        // window.appWindow.emit('create_job', {id: id, path: "C:\\scripts"});
+        invoke<string>('create_job', {id: id, path: "C:\\scripts"})
         .then((a1) => {
             console.log("ret: ", a1);
             setRes("OK " + a1);
@@ -19,6 +37,7 @@ function ViewEditDialog({
         .catch((e) => {
             setRes(e + '');
         });
+        jobId = id;
     }
     return (
         <div className="ViewEditDialog dialog">
@@ -38,6 +57,7 @@ function ViewEditDialog({
                 </div>
                 <div>
                     <button onClick={callRust}>Text Rust Method</button>
+                    <div>Job: {jobId}</div>
                     <div>Result: {res}</div>
                 </div>
             </div>
