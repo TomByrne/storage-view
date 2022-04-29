@@ -8,8 +8,10 @@ use fstat::options::{Handlers, Options as FStatOptions, OutputOption};
 use fstat::run;
 use fstat::systems::FileSystem;
 use std::path::Path;
-use std::sync::Arc;
-use tauri::{ AppHandle, Manager };
+use std::sync::{Arc, Mutex};
+use tauri::{AppHandle, Manager};
+
+const SEND_FILE_COUNT: usize = 20;
 
 fn main() {
   tauri::Builder::default()
@@ -35,39 +37,44 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   };
 
   fn start_handler(fs: FileStats, data: &JobData) {
-    if fs.is_dir { end_handler(fs, data); }
+    if fs.is_dir {
+      end_handler(fs, data);
+    }
   }
 
   fn end_handler(fs: FileStats, data: &JobData) {
-
-    let mut files: Vec<JobFileInfo> = Vec::new();
-    files.push(JobFileInfo {
+    let file = JobFileInfo {
       path: fs.path,
       name: fs.name,
       is_dir: fs.is_dir,
-      
       depth: fs.depth,
       index: fs.index,
       total: fs.total,
-    
       time: fs.time_s,
       size: fs.size_b,
-    });
-
-    let prog = JobProgress {
-      job: data.job,
-      files: files,
     };
-    
-    data
-      .handle
-      .emit_all("create_job/prog", prog)
-      .unwrap();
+
+    // let pending: &mut Vec<JobFileInfo> = data.pending.get_mut().unwrap();
+    // data.pending.get_mut(0).push(file);
+
+    let mut pending = data.pending.lock().unwrap();
+    pending.push(file);
+
+    if pending.len() >= SEND_FILE_COUNT {
+      let prog = JobProgress {
+        job: data.job,
+        files: pending.clone(),
+      };
+      pending.clear();
+      drop(pending);
+      data.handle.emit_all("create_job/prog", prog).unwrap();
+    }
   }
 
   let job_data: JobData = JobData {
     job: id,
     handle: handle,
+    pending: Mutex::new(Vec::new()),
   };
 
   let handlers: Handlers<JobData> = Handlers {
@@ -80,28 +87,35 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   let fs: Arc<dyn FileSystem> = Arc::new(fstat::systems::fs::Fs {});
   run(&path, opts, handlers, &job_data, &fs);
 
+  let pending: Vec<JobFileInfo> = job_data.pending.lock().unwrap().clone();
+  if pending.len() > 0 {
+    let prog = JobProgress {
+      job: job_data.job,
+      files: pending,
+    };
+    job_data.handle.emit_all("create_job/prog", prog).unwrap();
+  }
+
   return Ok(());
 }
 
 struct JobData {
   job: i32,
   handle: AppHandle,
+  pending: Mutex<Vec<JobFileInfo>>,
 }
 
-#[derive(serde::Serialize)]
-#[derive(Clone)]
+#[derive(serde::Serialize, Clone)]
 struct JobProgress {
   job: i32,
-  files: Vec<JobFileInfo>
+  files: Vec<JobFileInfo>,
 }
 
-#[derive(serde::Serialize)]
-#[derive(Clone)]
+#[derive(serde::Serialize, Clone)]
 struct JobFileInfo {
   path: String,
   name: String,
   is_dir: bool,
-  
   depth: u32,
   index: u32,
   total: u32,

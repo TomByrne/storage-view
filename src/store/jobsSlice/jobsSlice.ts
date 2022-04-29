@@ -62,10 +62,10 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     console.log("updateJobFile.end: ", job, file, node);
 }
 
-const path_regex = /(.*)(\\|\/)(.*)/;
+const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
 function getNode(job: JobInfo, file_name: string, file_path: string): FileNode {
     if (file_path !== job.path) {
-        let node = job.nodes[job.path];
+        let node = job.nodes[file_path];
         if (node) return node;
 
         const match = file_path.match(path_regex);
@@ -81,7 +81,6 @@ function getNode(job: JobInfo, file_name: string, file_path: string): FileNode {
         const parent = getNode(job, parent_name, parent_path);
         node = {
             name: file_name,
-            value: 0,
         };
         
         if (!parent.map) parent.map = {};
@@ -95,7 +94,7 @@ function getNode(job: JobInfo, file_name: string, file_path: string): FileNode {
         return node;
 
     } else {
-        job.nodes[file_name] = job.root;
+        job.nodes[file_path] = job.root;
         return job.root;
     }
 }
@@ -132,7 +131,6 @@ export const jobsSlice = createSlice({
                     state: JobState.doing,
                     root: {
                         name: "",
-                        value: 0,
                     },
                     nodes: {},
                 });
@@ -186,7 +184,7 @@ export interface FileNode {
     map?: Record<string, FileNode>,
     children?: FileNode[],
     name: string,
-    value: number,
+    value?: number,
 }
 
 // From Rust
