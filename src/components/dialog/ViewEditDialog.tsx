@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './ViewEditDialog.css';
+import './ViewEditDialog.scss';
 import { invoke,  } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 
