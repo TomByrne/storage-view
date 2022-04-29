@@ -9,7 +9,7 @@ use fstat::run;
 use fstat::systems::FileSystem;
 use std::path::Path;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager};
+use tauri::{ AppHandle, Manager };
 
 fn main() {
   tauri::Builder::default()
@@ -34,19 +34,34 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
     output: OutputOption::All,
   };
 
-  fn prog_handler(fs: FileStats, data: &JobData) {
-    let json_str = serde_json::json!({
-      "job": data.job,
-      "name": fs.name,
-      "path": fs.path,
-      "size_b": fs.size_b,
+  fn start_handler(fs: FileStats, data: &JobData) {
+    if fs.is_dir { end_handler(fs, data); }
+  }
+
+  fn end_handler(fs: FileStats, data: &JobData) {
+
+    let mut files: Vec<JobFileInfo> = Vec::new();
+    files.push(JobFileInfo {
+      path: fs.path,
+      name: fs.name,
+      is_dir: fs.is_dir,
+      
+      depth: fs.depth,
+      index: fs.index,
+      total: fs.total,
+    
+      time: fs.time_s,
+      size: fs.size_b,
     });
 
-    println!("prog: {}", json_str);
-
+    let prog = JobProgress {
+      job: data.job,
+      files: files,
+    };
+    
     data
       .handle
-      .emit_all("create_job/prog", json_str.to_string())
+      .emit_all("create_job/prog", prog)
       .unwrap();
   }
 
@@ -57,9 +72,9 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
 
   let handlers: Handlers<JobData> = Handlers {
     post: None,
-    start: None,
-    prog: Some(prog_handler),
-    end: None,
+    start: Some(start_handler),
+    prog: None,
+    end: Some(end_handler),
   };
 
   let fs: Arc<dyn FileSystem> = Arc::new(fstat::systems::fs::Fs {});
@@ -71,4 +86,26 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
 struct JobData {
   job: i32,
   handle: AppHandle,
+}
+
+#[derive(serde::Serialize)]
+#[derive(Clone)]
+struct JobProgress {
+  job: i32,
+  files: Vec<JobFileInfo>
+}
+
+#[derive(serde::Serialize)]
+#[derive(Clone)]
+struct JobFileInfo {
+  path: String,
+  name: String,
+  is_dir: bool,
+  
+  depth: u32,
+  index: u32,
+  total: u32,
+
+  time: u64, // seconds
+  size: u64, // bytes
 }

@@ -1,16 +1,23 @@
-import React from 'react';
 import './App.scss';
-import ViewEditDialog from './dialog/ViewEditDialog';
-import TreeMap from './panel/TreeMap';
+import NewJobDialog from './dialog/NewJobDialog';
+import JobTab from './JobTab';
+import { useSelector } from 'react-redux';
+import { selectJob, JobInfo } from '../store/jobsSlice/jobsSlice';
+
+function getMainView(job:JobInfo){
+  // if(job) {
+    //return <JobTab/>;
+  // } else {
+    return <NewJobDialog/>;
+  // }
+}
 
 function App() {
-  return (
-    <div className="App">
-      {/* <header className="App-header"> */}
-        {/* <ViewEditDialog/> */}
-        <TreeMap/>
-      {/* </header> */}
+  const job = useSelector(selectJob);
 
+  return (
+    <div className="App">\
+      { getMainView(job) }
     </div>
   );
 }
