@@ -1,9 +1,13 @@
+import { JobInfo } from '../store/jobsSlice/jobsSlice';
 import './JobTab.scss';
 import TreeMap from './panel/TreeMap';
 
-function JobTab() {
+interface JobTabProps {
+  job: JobInfo;
+}
+function JobTab({job}:JobTabProps) {
     return (
-      <TreeMap/>
+      <TreeMap job={job}/>
     );
 }
 

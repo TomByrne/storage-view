@@ -1,45 +1,48 @@
 import './TreeMap.scss';
 import TreeMapComp from "react-d3-treemap";
+import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
 
-interface TreeMapInputData {
-  name: string;
-  value?: number;
-  children?: Array<TreeMapInputData>;
-  className?: string;
+// interface TreeMapInputData {
+//   name: string;
+//   value?: number;
+//   children?: Array<TreeMapInputData>;
+//   className?: string;
+// }
+
+// let lastId = 0;
+
+// function generateData(depth: number): TreeMapInputData {
+//   let children: Array<TreeMapInputData> | undefined;
+//   let value: number | undefined;
+//   if(depth > 0) {
+//     children = [];
+//     const count = Math.random() * 8;
+//     for(var i=0; i<count; i++) {
+//       children.push(generateData(depth-1));
+//     }
+
+//   } else {
+//     value = Math.random() * 10;
+//   }
+
+//   return {
+//     name: `Test: ${lastId++}`,
+//     value,
+//     children,
+//   }
+// }
+
+interface TreeMapProps {
+  job: JobInfo;
 }
-
-let lastId = 0;
-
-function generateData(depth: number): TreeMapInputData {
-  let children: Array<TreeMapInputData> | undefined;
-  let value: number | undefined;
-  if(depth > 0) {
-    children = [];
-    const count = Math.random() * 8;
-    for(var i=0; i<count; i++) {
-      children.push(generateData(depth-1));
-    }
-
-  } else {
-    value = Math.random() * 10;
-  }
-
-  return {
-    name: `Test: ${lastId++}`,
-    value,
-    children,
-  }
-}
-
-function TreeMap() {
-  const data = generateData(5);
+function TreeMap({job}:TreeMapProps) {
     return (
         // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
-        <TreeMapComp<TreeMapInputData>
+        <TreeMapComp<FileNode>
           id="myTreeMap"
-          width={1920}
-          height={1080}
-          data={data}
+          width={1700}
+          height={920}
+          data={job.root}
           valueUnit={"MB"}
           hideNumberOfChildren={true}
           hideValue={true}

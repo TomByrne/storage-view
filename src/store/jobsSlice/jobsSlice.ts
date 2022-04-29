@@ -57,6 +57,8 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     console.log("updateJobFile.start: ", job, file);
     let node: FileNode = getNode(job, file.name, file.path);
     node.info = file;
+    node.name = file.name;
+    node.value = file.size;
     console.log("updateJobFile.end: ", job, file, node);
 }
 
@@ -75,11 +77,19 @@ function getNode(job: JobInfo, file_name: string, file_path: string): FileNode {
 
         const parent_path = match[1];
         const parent_name = match[3];
-        console.log("Parent: ", parent_name, parent_path);
+        // console.log("Parent: ", parent_name, parent_path);
         const parent = getNode(job, parent_name, parent_path);
-        node = {};
-        if (!parent.children) parent.children = {};
-        parent.children[file_name] = node;
+        node = {
+            name: file_name,
+            value: 0,
+        };
+        
+        if (!parent.map) parent.map = {};
+        parent.map[file_name] = node;
+        
+        if (!parent.children) parent.children = [];
+        parent.children.push(node);
+
         job.nodes[file_path] = node;
 
         return node;
@@ -120,7 +130,10 @@ export const jobsSlice = createSlice({
                 state.jobs.push({
                     ...jobBrief,
                     state: JobState.doing,
-                    root: {},
+                    root: {
+                        name: "",
+                        value: 0,
+                    },
                     nodes: {},
                 });
             })
@@ -143,7 +156,7 @@ export const findJob = (state: RootState, job: number) => state.jobs.jobs.find(j
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
-export const selectJob = (state: RootState) => state.jobs.jobs[0];
+export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.jobs.length-1];
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.
@@ -160,6 +173,7 @@ export const createJob = (path: string): AppThunk => (
             console.warn("Job already running, aborting");
             return;
         }
+
     }
     dispatch(createAsync({ id, path }));
 };
@@ -167,6 +181,13 @@ export const createJob = (path: string): AppThunk => (
 export default jobsSlice.reducer;
 
 
+export interface FileNode {
+    info?: JobFileInfo,
+    map?: Record<string, FileNode>,
+    children?: FileNode[],
+    name: string,
+    value: number,
+}
 
 // From Rust
 export interface JobProgress {
@@ -184,8 +205,4 @@ export interface JobFileInfo {
 
     time: number, // seconds
     size: number, // bytes
-}
-export interface FileNode {
-    info?: JobFileInfo,
-    children?: Record<string, FileNode>,
 }
