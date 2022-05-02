@@ -11,7 +11,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Manager};
 
-const SEND_FILE_COUNT: usize = 20;
+const SEND_FILE_COUNT: usize = 100;
 
 fn main() {
   tauri::Builder::default()
@@ -54,10 +54,29 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
       size: fs.size_b,
     };
 
-    // let pending: &mut Vec<JobFileInfo> = data.pending.get_mut().unwrap();
-    // data.pending.get_mut(0).push(file);
+    // let mut files = Vec::new();
+    // files.push(file);
+    // let prog = JobProgress {
+    //   job: data.job,
+    //   files: files,
+    // };
+    // data.handle.emit_all("create_job/prog", prog).unwrap();
 
+    
     let mut pending = data.pending.lock().unwrap();
+
+    // Remove old copies of this file object
+    let filter = |f:&JobFileInfo| f.path == file.path;
+    // pending.drain_filter(filter); // TODO: use this method when `drain_filter` is released to stable
+    let mut i = 0;
+    while i < pending.len() {
+        if filter(&pending[i]) {
+          pending.remove(i);
+        } else {
+            i += 1;
+        }
+    }
+
     pending.push(file);
 
     if pending.len() >= SEND_FILE_COUNT {
