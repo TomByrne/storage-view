@@ -6,8 +6,9 @@ import './NewJobDialog.scss';
 
 interface NewJobDialogProps {
     closable?: boolean;
+    onClose?: () => void;
 }
-function NewJobDialog({ closable }: NewJobDialogProps) {
+function NewJobDialog({ closable, onClose }: NewJobDialogProps) {
     const [path, setPath] = useState<string | undefined>();
     const dispatch = useAppDispatch();
 
@@ -22,25 +23,20 @@ function NewJobDialog({ closable }: NewJobDialogProps) {
             })
     }
 
-    function listDrives() {
-        const ret = [
-            <div className='option' key="browse">
-                <div>Select a path</div>
-                <button onClick={browse}>Browse</button>
-            </div>
-        ]
-
+    function getPathInfo() {
         if (path) {
-            ret.push(
-                <div className='option' key="scan">
+            return <div className='option' key="scan">
                     <div>Path to scan:</div>
                     <div>{path}</div>
                     <button onClick={create}>Begin Scan</button>
                 </div>
-            );
         }
+    }
 
-        return ret;
+    function closeButton() {
+        if (closable && onClose) {
+            return <button onClick={onClose}>X</button>
+        }
     }
 
     function create() {
@@ -51,9 +47,15 @@ function NewJobDialog({ closable }: NewJobDialogProps) {
         <div className="new-job dialog-cont">
             <div className="blocker" />
             <div className="new-job dialog">
-                <h2 className='title'>Select Path </h2>
+                <h2 className='title'>Select Path
+                    {closeButton()}
+                </h2>
                 <div className='content options'>
-                    {listDrives()}
+                    <div className='option' key="browse">
+                        <div>Select a path</div>
+                        <button onClick={browse}>Browse</button>
+                    </div>
+                    {getPathInfo()}
                 </div>
             </div>
         </div >

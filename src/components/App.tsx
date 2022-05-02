@@ -17,13 +17,13 @@ function App() {
   function getMainView(job:JobInfo){
     let ret = [];
     if(job) {
-      ret.push(<button onClick={toggleShowNew} >New Scan</button>);
-      if(job.state === JobState.done) ret.push(<JobTab job={job}/>);
-      else ret.push(<div>Working</div>);
+      ret.push(<button key="new-job-btn" onClick={toggleShowNew} >New Scan</button>);
+      if(job.state === JobState.done) ret.push(<JobTab key="job-tab" job={job}/>);
+      else ret.push(<div key="working-msg">Working</div>);
     }
     
     if(!job || showNew) {
-      ret.push(<NewJobDialog closable={!!job}/>);
+      ret.push(<NewJobDialog key="new-job" closable={!!job} onClose={toggleShowNew}/>);
     }
 
     return ret;

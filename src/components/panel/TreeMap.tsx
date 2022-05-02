@@ -1,6 +1,9 @@
 import './TreeMap.scss';
 import TreeMapComp from "react-d3-treemap";
 import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import { createRef, RefObject, useRef, useState } from 'react';
+import React from 'react';
+import useRefDimensions from '../../utils/getRefDimensions';
 
 // interface TreeMapInputData {
 //   name: string;
@@ -32,24 +35,30 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
 //   }
 // }
 
+
 interface TreeMapProps {
   job: JobInfo;
 }
-function TreeMap({job}:TreeMapProps) {
-    return (
-        // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
-        <TreeMapComp<FileNode>
-          id="myTreeMap"
-          width={1700}
-          height={920}
-          data={job.root}
-          valueUnit={"MB"}
-          hideNumberOfChildren={true}
-          hideValue={true}
-          levelsToDisplay={3}
-          paddingInner={0}
+function TreeMap({ job }: TreeMapProps) {
+  const treemapRef = createRef<HTMLDivElement>()
+  const dimensions = useRefDimensions(treemapRef);
+
+  return (
+    <div id="tree-cont" ref={treemapRef}>
+      <TreeMapComp<FileNode>
+        id="tree-map"
+        width={1700}
+        height={920}
+        data={job.root}
+        valueUnit={"MB"}
+        hideNumberOfChildren={true}
+        hideValue={true}
+        disableTooltip={true}
+        levelsToDisplay={3}
+        paddingInner={0}
       />
-    );
+    </div>
+  );
 }
 
 export default TreeMap;

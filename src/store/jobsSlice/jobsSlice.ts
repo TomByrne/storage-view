@@ -54,12 +54,21 @@ function updateJob(job: JobInfo, progress: JobProgress) {
     for (const file of progress.files) updateJobFile(job, file);
 }
 function updateJobFile(job: JobInfo, file: JobFileInfo) {
-    console.log("updateJobFile.start: ", job, file);
+    // console.log("updateJobFile.start: ", job, file);
     let node: FileNode = getNode(job, file.name, file.path);
     node.info = file;
     node.name = file.name;
     node.value = file.size;
-    console.log("updateJobFile.end: ", job, file, node);
+    node.className = (file.is_dir ? "type-dir" : "type-file") +
+        (!file.is_dir ? " ext-" + getExt(file.name) : '')
+        ;
+    // console.log("updateJobFile.end: ", job, file, node);
+}
+
+function getExt(file: string): string {
+    const ind = file.lastIndexOf('.');
+    if (ind === -1) return "";
+    else return file.substring(ind + 1);
 }
 
 const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
@@ -82,10 +91,10 @@ function getNode(job: JobInfo, file_name: string, file_path: string): FileNode {
         node = {
             name: file_name,
         };
-        
+
         if (!parent.map) parent.map = {};
         parent.map[file_name] = node;
-        
+
         if (!parent.children) parent.children = [];
         parent.children.push(node);
 
@@ -154,7 +163,7 @@ export const findJob = (state: RootState, job: number) => state.jobs.jobs.find(j
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
-export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.jobs.length-1];
+export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.jobs.length - 1];
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.
@@ -167,7 +176,7 @@ export const createJob = (path: string): AppThunk => (
     const currJob = selectJob(state);
     const id = state.jobs.lastJobId + 1;
     if (currJob) {
-        if(currJob.state === JobState.doing){
+        if (currJob.state === JobState.doing) {
             console.warn("Job already running, aborting");
             return;
         }
@@ -185,6 +194,7 @@ export interface FileNode {
     children?: FileNode[],
     name: string,
     value?: number,
+    className?: string,
 }
 
 // From Rust
