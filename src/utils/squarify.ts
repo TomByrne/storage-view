@@ -1,158 +1,99 @@
-// Taken from https://github.com/nicopolyptic
+import { FileNode } from "../store/jobsSlice/jobsSlice";
 
-/*
-     _   ___                        __            __  _
-    / | / (_)________  ____  ____  / /_  ______  / /_(_)____
-   /  |/ / / ___/ __ \/ __ \/ __ \/ / / / / __ \/ __/ / ___/
-  / /|  / / /__/ /_/ / /_/ / /_/ / / /_/ / /_/ / /_/ / /__
- /_/ |_/_/\___/\____/ .___/\____/_/\__, / .___/\__/_/\___/
-                   /_/            /____/_/
- */
-/*export default function squarify(
-    children: Node[],
-    width: number,
-    height: number,
-) {
-    var children: Node[] = children.slice(0);
-    scaleWeights(children, width, height);
-    children.sort((a: Node, b: Node) => { return b.value - a.value });
-    // children.push(new InternalNode(0, null)); // ???
-    var vertical = height < width;
-    var w = vertical ? height : width;
-    var x = 0, y = 0;
-    var rw = width;
-    var rh = height;
-    var row: Node[] = [];
-    while (children.length > 0) {
-        var c = children[0];
-        var r = c.value;
-        var s = sum(row);
-        var min = get_min(row);
-        var max = get_max(row);
-        var wit = worst(s + r, Math.min(min, r), Math.max(max, r), w);
-        var without = worst(s, min, max, w);
-        if (row.length === 0 || wit < without) {
-            row.push(c);
-            children.shift();
+function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: boolean, x: number, y: number, w: number, h: number, row_size:number, total:number) {
+    for (let i = start; i < end; i++) {
+        const child = nodes[i];
+        const value = (child.value || 0) / total * (w * h);
+
+        child.pos_x = x;
+        child.pos_y = y;
+
+        if (is_row) {
+            child.pos_h = row_size;
+            child.pos_w = value / row_size;
+            x += child.pos_w; // reversing stack direction could happen here
         } else {
-            var rx = x;
-            var ry = y;
-            var z = s / w;
-            var j;
-            for (j = 0; j < row.length; ++j) {
-                var d = row[j].value / z;
-                if (vertical) {
-                    setFrame(rx, ry, z, d, row[j]);
-                    ry = ry + d;
-                } else {
-                    setFrame(rx, ry, d, z, row[j]);
-                    rx = rx + d;
-                }
-            }
-            if (vertical) {
-                x = x + z;
-                rw = rw - z;
-            } else {
-                y = y + z;
-                rh = rh - z;
-            }
-
-            vertical = rh < rw;
-            w = vertical ? rh : rw;
-            row = [];
+            child.pos_w = row_size;
+            child.pos_h = value / row_size;
+            y += child.pos_h; // reversing stack direction could happen here
         }
     }
 }
 
-function setFrame(x:number, y:number, width:number, height:number, node:Node){
-    node.frame = {
-        x: x,
-        y: y,
-        width: width,
-        height: height
-    };
-}*/
+export default function squarify(node: FileNode, x: number, y: number, w: number, h: number) {
+    node.pos_x = x;
+    node.pos_y = y;
+    node.pos_w = w;
+    node.pos_h = h;
 
-export function worst(s: number, min: number, max: number, w: number): number {
-    return Math.max(w * w * max / (s * s), s * s / (w * w * min));
+    squarify_recurse(node, x, y, w, h, node.value || 0);
 }
 
-function scaleWeights(weights: Node[], width: number, height: number) {
-    var scale = width * height / sum(weights);
-    for (var i = 0; i < weights.length; i++) {
-        weights[i].value = scale * weights[i].value;
-    }
-}
+function squarify_recurse(node: FileNode, x: number, y: number, w: number, h: number, total:number) {
 
-function get_max(array: Node[]): number {
-    return Math.max.apply(Math, weights(array));
-}
-
-function get_min(array: Node[]): number {
-    return Math.min.apply(Math, weights(array));
-}
-
-function sum(array: Node[]): number {
-    var total = 0;
-    for (let node of array) {
-        total = total + node.value;
-    }
-    return total;
-}
-
-function weights(array: Node[]) {
-    return array.map(d => d.value, array);
-}
+    if (!node.children) return;
 
 
-/*export default function squarify(
-    rootNode: Node,
-    f: (x: number, y: number, width: number, height: number, node: Node) => void
-) {
-    // InternalNode.weigh(rootNode);
-    var children = new Array<Node>();
-    children.push(rootNode);
-    // level ordered traversal
-    while (children.length > 0) {
-        var node = children.shift();
-        if (node.children && node.children.length > 0) {
-            squarify_recurse(
-                node.children,
-                node.frame.width,
-                node.frame.height,
-            );
+    node.children = node.children.sort((f1, f2) => (f2.value || 0) - (f1.value || 0));
 
-            for (var i = 0; i < node.children.length; ++i) {
-                var childNode = node.children[i];
-                if (childNode.children && childNode.children.length > 0) {
-                    children.push(childNode);
-                }
+    let active_x = x;
+    let active_y = y;
+    let active_w = w;
+    let active_h = h;
+    let is_row = (active_w < active_h);
+    // let row_aspect = is_row ? active_w / active_h : active_h / active_w;
+    let edge = is_row ? active_w : active_h;
+    let row_aspect = 0;
+    let row_start = 0;
+    let row_area = 0; // total value/area in row
+    let row_size = 0; // dimension in other axis (i.e. width for row, height for column)
+
+    let i = 0;
+    while (i < node.children.length) {
+        const child = node.children[i];
+        // if (!child.value) {
+        //     i++;
+        //     continue; // Skip items with no value! (might want to give them a minimum at some point)
+        // }
+        let child_area = child.value || 0;
+        let child_area_norm = ((child_area) / total) * (active_w * active_h);
+
+        // Need to convert from size total units to view units
+        let row_area_norm = ((row_area + child_area) / total) * (active_w * active_h);
+        let row_size_new = row_area_norm / edge;
+
+        let item_other = child_area_norm / row_size_new;
+
+        // Work out the 'worst' aspect ratio for the item (i.e. the aspect ratio in relation to it's longest side)
+        let row_aspect_new = Math.max(item_other / row_size_new, row_size_new / item_other);
+        if (row_start !== i && row_aspect_new > row_aspect) {
+            // Aspect ration has become worse, start a new row
+            finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, row_size, total);
+            total -= row_area;
+
+            if(is_row) {
+                active_y += row_size;
+                active_h -= row_size;
+            } else{
+                active_x += row_size;
+                active_w -= row_size;
             }
+            is_row = !is_row;
+            row_area = 0;
+            row_start = i;
+            edge = is_row ? active_w : active_h;
+
+        } else {
+            // Aspect ratio looking good, continue packing row
+            row_area += child_area;
+            row_aspect = row_aspect_new;
+            row_size = row_size_new;
+            i++;
         }
     }
+    finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, row_size, total);
 
-    children.push(rootNode);
-    while (children.length > 0) {
-        var node2 = children.pop();
-        f(node2.frame.x, node2.frame.y, node2.frame.width, node2.frame.height, node2);
-        if (node2.children) {
-            for (var i = 0; i < node2.children.length; ++i) {
-                children.push(node2.children[i]);
-            }
-        }
+    for(const child of node.children) {
+        squarify_recurse(child, 0, 0, child.pos_w, child.pos_h, child.value || 0);
     }
-}*/
-
-export interface Node {
-    // parent : Node;
-    children : Node[];
-    // data: any;
-    value: number;
-    
-    pos_x: number;
-    pos_y: number;
-    pos_w: number;
-    pos_h: number;
-
-    // level :number;
 }

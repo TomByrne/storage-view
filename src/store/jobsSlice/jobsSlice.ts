@@ -1,8 +1,8 @@
-import { Action, createAsyncThunk, createSlice, current, isDraft } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, current, isDraft } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
-import squarify from '../../utils/squarify2';
+import squarify from '../../utils/squarify';
 
 export interface JobsState {
     lastJobId: number,
@@ -67,7 +67,7 @@ const createAsync = createAsyncThunk(
         await invoke<string>('create_job', { id: id, path: path });
         const state = getState() as RootState;
         const job = state.jobs.jobs.find(j => j.id === id);
-        if(job && job.state !== JobState.done) {
+        if (job && job.state !== JobState.done) {
             delete FILENODE_CACHE[id];
             await dispatch({
                 type: "jobs/set-state",
@@ -81,16 +81,6 @@ const createAsync = createAsyncThunk(
     }
 );
 
-// function updateJob(job: JobInfo, progress: JobProgress) {
-//     for (const file of progress.files) updateJobFile(job, file);
-
-    // if (progress.done) {
-    //     job.state = JobState.done;
-    //     squarify(job.root, 0, 0, job.viewW, job.viewH, job.root.value || 0);
-    //     job.nodes = {};
-    //     console.log("Finished job", JSON.stringify(job, null, " "));
-    // }
-// }
 function updateJobFile(job: JobInfo, file: JobFileInfo) {
     if (file.name === "src")
         console.log("updateJobFile.start: ", job, file);
@@ -101,7 +91,6 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.className = (file.is_dir ? "type-dir" : "type-file") +
         (!file.is_dir ? " ext-" + getExt(file.name) : '')
         ;
-    // console.log("updateJobFile.end: ", job, file, node);
 }
 
 function getExt(file: string): string {
@@ -112,66 +101,53 @@ function getExt(file: string): string {
 
 const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
 function getNode(job: JobInfo, file_name: string, file_path: string, update?: boolean): FileNode {
-    // if (file_path !== job.path) {
-        let node;
-        if (file_path === job.path) node = job.root;
-        else node = FILENODE_CACHE[job.id][file_path];
+    let node;
+    if (file_path === job.path) node = job.root;
+    else node = FILENODE_CACHE[job.id][file_path];
 
-        if (node && (!update /*|| !isDraft(node)*/)) {
-            // if(update) {
-            //     node = { ...node };
-            //     FILENODE_CACHE[job.id][file_path] = node;
-            // }
-            return node;
-        }
-        if(node) {
-            node = { ...node }
-        } else {
-            node = {
-                name: file_name,
-    
-                pos_x: 0,
-                pos_y: 0,
-                pos_w: 0,
-                pos_h: 0,
-            };
-        }
-        
-        if (file_path !== job.path) {
-            // Not root node, find parent
-            const match = file_path.match(path_regex);
-            if (!match || match.length < 4) {
-                let msg = "Failed to match path: " + file_path;
-                console.log(msg);
-                throw new Error(msg);
-            }
-
-            const parent_path = match[1];
-            const parent_name = match[3];
-            const parent = getNode(job, parent_name, parent_path, update);
-
-            if (!parent.map) parent.map = {};
-            else parent.map = {...parent.map};
-            parent.map[file_name] = node;
-
-            if (!parent.children) parent.children = [];
-            parent.children = parent.children.filter((n) => n.name !== file_name);
-            parent.children.push(node);
-        } else {
-            job.root = node;
-        }
-
-        FILENODE_CACHE[job.id][file_path] = node;
-
+    if (node && (!update /*|| !isDraft(node)*/)) {
         return node;
+    }
+    if (node) {
+        node = { ...node }
+    } else {
+        node = {
+            name: file_name,
 
-    // } else {
-    //     FILENODE_CACHE[job.id][file_path] = job.root;
-    //     if(update /*&& isDraft(job.root)*/) {
-    //         job.root = { ...job.root }
-    //     }
-    //     return job.root;
-    // }
+            pos_x: 0,
+            pos_y: 0,
+            pos_w: 0,
+            pos_h: 0,
+        };
+    }
+
+    if (file_path !== job.path) {
+        // Not root node, find parent
+        const match = file_path.match(path_regex);
+        if (!match || match.length < 4) {
+            let msg = "Failed to match path: " + file_path;
+            console.log(msg);
+            throw new Error(msg);
+        }
+
+        const parent_path = match[1];
+        const parent_name = match[3];
+        const parent = getNode(job, parent_name, parent_path, update);
+
+        if (!parent.map) parent.map = {};
+        else parent.map = { ...parent.map };
+        parent.map[file_name] = node;
+
+        if (!parent.children) parent.children = [];
+        parent.children = parent.children.filter((n) => n.name !== file_name);
+        parent.children.push(node);
+    } else {
+        job.root = node;
+    }
+
+    FILENODE_CACHE[job.id][file_path] = node;
+
+    return node;
 }
 
 export const jobsSlice = createSlice({
@@ -192,15 +168,15 @@ export const jobsSlice = createSlice({
             for (const file of progress.files) updateJobFile(new_job, file);
 
             //return state;
-            const ret =  {
+            const ret = {
                 ...state,
-                jobs: state.jobs.map((j) => j.id === progress.job ? new_job : j )
+                jobs: state.jobs.map((j) => j.id === progress.job ? new_job : j)
             }
 
             return ret;
         },
         "file-update": (state, action) => {
-            const payload:{ job:number, file:JobFileInfo } = action.payload;
+            const payload: { job: number, file: JobFileInfo } = action.payload;
             const job = state.jobs.find(j => j.id === payload.job);
             if (!job) {
                 console.warn(`Ignoring update for expired job: ${payload.job}`, action.payload);
@@ -220,12 +196,12 @@ export const jobsSlice = createSlice({
         },
         "set-state": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
-            if(job) job.state = action.payload.state;
+            if (job) job.state = action.payload.state;
             else console.warn(`Couldn't find job to update state job: ${action.payload.job}`, action.payload.state);
         },
         "finish": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
-            if(!job) {
+            if (!job) {
                 console.warn(`Couldn't find job to finish: ${action.payload.job}`);
                 return
             }
@@ -261,17 +237,6 @@ export const jobsSlice = createSlice({
                     },
                 });
             })
-        // .addCase(createAsync.fulfilled, (state, action) => {
-        //     const job = state.jobs.find(j => j.id === action.meta.arg.id);
-        //     if (!job) {
-        //         console.error("Failed to find job: ", action.meta.arg.id);
-        //         return;
-        //     }
-        //     job.state = JobState.done;
-        //     squarify(job.root, 0, 0, job.viewW, job.viewH, job.root.value || 0);
-        //     job.nodes = {};
-        //     console.log("createAsync.fulfilled", JSON.stringify(job, null, " "));
-        // });
     },
 });
 

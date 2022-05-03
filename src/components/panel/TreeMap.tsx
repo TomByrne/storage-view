@@ -1,41 +1,8 @@
 import './TreeMap.scss';
-import TreeMapComp from "react-d3-treemap";
 import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
-import { createRef, RefObject, useEffect, useRef, useState } from 'react';
-import React from 'react';
+import { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
-import { worst } from "../../utils/squarify";
 import { useDispatch } from 'react-redux';
-
-// interface TreeMapInputData {
-//   name: string;
-//   value?: number;
-//   children?: Array<TreeMapInputData>;
-//   className?: string;
-// }
-
-// let lastId = 0;
-
-// function generateData(depth: number): TreeMapInputData {
-//   let children: Array<TreeMapInputData> | undefined;
-//   let value: number | undefined;
-//   if(depth > 0) {
-//     children = [];
-//     const count = Math.random() * 8;
-//     for(var i=0; i<count; i++) {
-//       children.push(generateData(depth-1));
-//     }
-
-//   } else {
-//     value = Math.random() * 10;
-//   }
-
-//   return {
-//     name: `Test: ${lastId++}`,
-//     value,
-//     children,
-//   }
-// }
 
 
 interface TreeMapProps {
@@ -81,18 +48,6 @@ function TreeMap({ job }: TreeMapProps) {
   return (
     <div id="tree-cont" ref={treemapRef}>
       {getNode(job.root, "root-node")}
-      {/* <TreeMapComp<FileNode>
-        id="tree-map"
-        width={1700}
-        height={920}
-        data={job.root}
-        valueUnit={"MB"}
-        hideNumberOfChildren={true}
-        hideValue={true}
-        disableTooltip={true}
-        levelsToDisplay={3}
-        paddingInner={0}
-      /> */}
     </div>
   );
 }
