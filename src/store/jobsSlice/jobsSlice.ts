@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, current, isDraft } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, current } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
@@ -105,7 +105,7 @@ function getNode(job: JobInfo, file_name: string, file_path: string, update?: bo
     if (file_path === job.path) node = job.root;
     else node = FILENODE_CACHE[job.id][file_path];
 
-    if (node && (!update /*|| !isDraft(node)*/)) {
+    if (node && !update) {
         return node;
     }
     if (node) {
