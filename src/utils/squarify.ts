@@ -1,6 +1,9 @@
 import { FileNode } from "../store/jobsSlice/jobsSlice";
 
-function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: boolean, x: number, y: number, w: number, h: number, row_size:number, total:number) {
+//TODO: get rid of this
+export const NATURAL_SIZE = 1000;
+
+function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: boolean, x: number, y: number, w: number, h: number, scopeX:number, scopeY:number, row_size:number, total:number) {
     for (let i = start; i < end; i++) {
         const child = nodes[i];
         const value = (child.value || 0) / total * (w * h);
@@ -20,24 +23,27 @@ function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: bool
     }
 }
 
-export default function squarify(node: FileNode, x: number, y: number, w: number, h: number) {
-    node.pos_x = x;
-    node.pos_y = y;
-    node.pos_w = w;
-    node.pos_h = h;
+export default function squarify(node: FileNode, aspectRatio: number) {
+    const size = NATURAL_SIZE;
 
-    squarify_recurse(node, x, y, w, h, node.value || 0);
+    node.pos_x = 0;
+    node.pos_y = 0;
+    node.pos_w = size * aspectRatio;
+    node.pos_h = size;
+
+
+    squarify_recurse(node, node.pos_w, node.pos_h, node.value || 0);
 }
 
-function squarify_recurse(node: FileNode, x: number, y: number, w: number, h: number, total:number) {
+function squarify_recurse(node: FileNode, w: number, h: number, total:number) {
 
     if (!node.children) return;
 
 
     node.children = node.children.sort((f1, f2) => (f2.value || 0) - (f1.value || 0));
 
-    let active_x = x;
-    let active_y = y;
+    let active_x = 0;
+    let active_y = 0;
     let active_w = w;
     let active_h = h;
     let is_row = (active_w < active_h);
@@ -67,8 +73,8 @@ function squarify_recurse(node: FileNode, x: number, y: number, w: number, h: nu
         // Work out the 'worst' aspect ratio for the item (i.e. the aspect ratio in relation to it's longest side)
         let row_aspect_new = Math.max(item_other / row_size_new, row_size_new / item_other);
         if (row_start !== i && row_aspect_new > row_aspect) {
-            // Aspect ration has become worse, start a new row
-            finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, row_size, total);
+            // Aspect ratio has become worse, start a new row
+            finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, w, h, row_size, total);
             total -= row_area;
 
             if(is_row) {
@@ -91,9 +97,9 @@ function squarify_recurse(node: FileNode, x: number, y: number, w: number, h: nu
             i++;
         }
     }
-    finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, row_size, total);
+    finaliseRow(node.children, row_start, i, is_row, active_x, active_y, active_w, active_h, w, h, row_size, total);
 
     for(const child of node.children) {
-        squarify_recurse(child, 0, 0, child.pos_w, child.pos_h, child.value || 0);
+        squarify_recurse(child, child.pos_w, child.pos_h, child.value || 0);
     }
 }

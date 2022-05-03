@@ -17,8 +17,7 @@ export interface JobBrief {
 export interface JobInfo extends JobBrief {
     root: FileNode,
     state: JobState,
-    viewW: number,
-    viewH: number,
+    aspectRatio: number,
 }
 
 export enum JobState {
@@ -88,15 +87,6 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.info = file;
     node.name = file.name;
     node.value = file.size;
-    node.className = (file.is_dir ? "type-dir" : "type-file") +
-        (!file.is_dir ? " ext-" + getExt(file.name) : '')
-        ;
-}
-
-function getExt(file: string): string {
-    const ind = file.lastIndexOf('.');
-    if (ind === -1) return "";
-    else return file.substring(ind + 1);
 }
 
 const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
@@ -184,15 +174,14 @@ export const jobsSlice = createSlice({
             }
             updateJobFile(job, payload.file);
         },
-        setViewSize(state, action) {
+        "set-aspect-ratio": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (!job) {
                 console.warn(`Ignoring update for expired job: ${action.payload.job}`, action.payload);
                 return
             }
-            job.viewW = action.payload.width;
-            job.viewH = action.payload.height;
-            if (job.state === JobState.done) squarify(job.root, 0, 0, job.viewW, job.viewH);
+            job.aspectRatio = action.payload.aspectRatio;
+            if (job.state === JobState.done) squarify(job.root, job.aspectRatio);
         },
         "set-state": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
@@ -206,7 +195,7 @@ export const jobsSlice = createSlice({
                 return
             }
             job.state = JobState.done;
-            squarify(job.root, 0, 0, job.viewW, job.viewH);
+            squarify(job.root, job.aspectRatio);
             console.log("Job finished", current(job));
         }
     },
@@ -225,8 +214,7 @@ export const jobsSlice = createSlice({
                 state.jobs.push({
                     ...jobBrief,
                     state: JobState.doing,
-                    viewW: 1920,
-                    viewH: 1080,
+                    aspectRatio: 1,
                     root: {
                         name: "",
 
@@ -278,9 +266,9 @@ export interface FileNode {
     children?: FileNode[],
     name: string,
     value?: number,
-    className?: string,
+    // className?: string,
 
-    //TODO: remove
+    // Fractions
     pos_x: number;
     pos_y: number;
     pos_w: number;

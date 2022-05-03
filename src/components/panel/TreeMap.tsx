@@ -3,6 +3,7 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
 import { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { useDispatch } from 'react-redux';
+import { NATURAL_SIZE } from '../../utils/squarify';
 
 
 interface TreeMapProps {
@@ -15,8 +16,9 @@ function TreeMap({ job }: TreeMapProps) {
   
 
   useEffect(() => {
-    if(job.viewW === dimensions.width && job.viewH === dimensions.height) return;
-    dispatch({ type:"jobs/setViewSize", payload:{ job:job.id, width:dimensions.width, height:dimensions.height } })
+    const aspectRatio = Math.round(dimensions.width / dimensions.height * 10) / 10;
+    if(job.aspectRatio === aspectRatio) return;
+    dispatch({ type:"jobs/set-aspect-ratio", payload:{ job:job.id, aspectRatio } })
   }, [dimensions, dispatch, job]);
 
   function getNodeChildren(node: FileNode, maxDepth:number) {
@@ -64,7 +66,9 @@ function TreeMap({ job }: TreeMapProps) {
 
   return (
     <div id="tree-cont" ref={treemapRef}>
-      {getNode(job.root, 10, "root-node")}
+      <div id="scale-cont" style={{ transform:`scaleY(${dimensions.height / NATURAL_SIZE}) scaleX(${dimensions.width / (NATURAL_SIZE * job.aspectRatio)})` }}>
+        {getNode(job.root, 10, "root-node")}
+      </div>
     </div>
   );
 }
