@@ -28,21 +28,21 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
     return Err(format!("Path not found: {}", path));
   }
 
-  let verbose = true;
-
   let opts = FStatOptions {
     multithread: true,
-    verbose: verbose,
+    verbose: false,
     output: OutputOption::All,
   };
 
-  fn start_handler(fs: FileStats, data: &JobData) {
-    if fs.is_dir {
-      end_handler(fs, data);
-    }
-  }
+  // fn start_handler(fs: FileStats, data: &JobData) {
+  //   if fs.is_dir {
+  //     end_handler(fs, data);
+  //   }
+  // }
 
   fn end_handler(fs: FileStats, data: &JobData) {
+    // println!("end_handler: {} {}", fs.path, fs.size_b);
+    
     let file = JobFileInfo {
       path: fs.path,
       name: fs.name,
@@ -83,6 +83,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
       let prog = JobProgress {
         job: data.job,
         files: pending.clone(),
+        done: false,
       };
       pending.clear();
       drop(pending);
@@ -98,7 +99,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
 
   let handlers: Handlers<JobData> = Handlers {
     post: None,
-    start: Some(start_handler),
+    start: None,
     prog: None,
     end: Some(end_handler),
   };
@@ -107,13 +108,14 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   run(&path, opts, handlers, &job_data, &fs);
 
   let pending: Vec<JobFileInfo> = job_data.pending.lock().unwrap().clone();
-  if pending.len() > 0 {
+  // if pending.len() > 0 {
     let prog = JobProgress {
       job: job_data.job,
       files: pending,
+      done: true,
     };
     job_data.handle.emit_all("create_job/prog", prog).unwrap();
-  }
+  // }
 
   return Ok(());
 }
@@ -128,6 +130,7 @@ struct JobData {
 struct JobProgress {
   job: i32,
   files: Vec<JobFileInfo>,
+  done: bool,
 }
 
 #[derive(serde::Serialize, Clone)]

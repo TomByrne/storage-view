@@ -17,7 +17,7 @@ function App() {
   function getMainView(job:JobInfo){
     let ret = [];
     if(job) {
-      ret.push(<button key="new-job-btn" onClick={toggleShowNew} >New Scan</button>);
+      // ret.push(<button key="new-job-btn" onClick={toggleShowNew} >New Scan</button>);
       if(job.state === JobState.done) ret.push(<JobTab key="job-tab" job={job}/>);
       else ret.push(<div key="working-msg">Working</div>);
     }

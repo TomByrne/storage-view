@@ -8467,6 +8467,10 @@ tr46@^2.1.0:
   dependencies:
     punycode "^2.1.1"
 
+"treemap@https://github.com/nicopolyptic/treemap.git":
+  version "1.0.0"
+  resolved "https://github.com/nicopolyptic/treemap.git#9b8effd482baef77a807faebb39f22e50ae777f5"
+
 tryer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/tryer/-/tryer-1.0.1.tgz#f2c85406800b9b0f74c9f7465b81eaad241252f8"

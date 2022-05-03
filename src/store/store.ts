@@ -5,6 +5,11 @@ export const store = configureStore({
   reducer: {
     jobs: jobsReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      immutableCheck : false,
+      serializableCheck: false,
+    }),
 });
 
 export type AppDispatch = typeof store.dispatch;
