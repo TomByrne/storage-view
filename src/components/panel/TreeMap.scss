@@ -2,18 +2,19 @@
     position: relative;
     width: 100%;
     height: 100%;
-}
-.root-node {
-    width: 100% !important;
-    height: 100% !important;
+    background: black;
 }
 .node {
     position: absolute;
-    background: radial-gradient(circle at 10% 10%, rgb(212, 69, 69), rgb(82, 20, 20));
+    box-sizing: border-box;
     // padding: 10px;
+    
+    &.max-depth {
+        background: radial-gradient(circle at 10% 10%, rgb(110, 110, 110), rgb(53, 53, 53));
+    }
 
     &.type-file {
-        background: radial-gradient(circle at 10% 10%, rgb(202, 212, 69), rgb(151, 158, 49));
+        background: radial-gradient(circle at 10% 10%, rgb(224, 224, 224), rgb(184, 184, 184));
         // padding: 2px;
     }
 
@@ -30,5 +31,161 @@
         > .label {
             opacity: 1;
         }
+    }
+
+    // &.depth-1 {
+    //     outline: 1px solid black;
+    // }
+
+    &.ext-js,
+    &.ext-ts,
+    &.ext-jsx,
+    &.ext-tsx,
+    &.ext-c,
+    &.ext-h,
+    &.ext-java,
+    &.ext-class,
+    &.ext-obj,
+    &.ext-cgi,
+    &.ext-pl,
+    &.ext-py,
+    &.ext-rs,
+    &.ext-sh,
+    &.ext-ps1,
+    &.ext-swift,
+    &.ext-vb,
+    &.ext-cpp,
+    &.ext-as,
+    &.ext-hx {
+        background: radial-gradient(circle at 10% 10%, rgb(69, 212, 93), rgb(48, 151, 66));
+    }
+
+    &.ext-txt,
+    &.ext-md {
+        background: radial-gradient(circle at 10% 10%, rgb(69, 143, 212), rgb(50, 100, 148));
+    }
+
+    &.ext-json,
+    &.ext-xml,
+    &.ext-csv,
+    &.ext-log,
+    &.ext-html,
+    &.ext-htm,
+    &.ext-xhtml,
+    &.ext-map,
+    &.ext-css,
+    &.ext-scss,
+    &.ext-strings {
+        background: radial-gradient(circle at 10% 10%, rgb(155, 69, 212), rgb(109, 48, 150));
+    }
+
+    &.ext-zip,
+    &.ext-7z,
+    &.ext-arj,
+    &.ext-rar,
+    &.ext-pkg,
+    &.ext-rpm,
+    &.ext-tar,
+    &.ext-gz,
+    &.ext-z {
+        background: radial-gradient(circle at 10% 10%, rgb(238, 221, 73), rgb(168, 157, 54));
+    }
+
+    &.ext-mp4,
+    &.ext-flv,
+    &.ext-mpg,
+    &.ext-mpeg,
+    &.ext-mov,
+    &.ext-avi,
+    &.ext-f4v,
+    &.ext-3g2,
+    &.ext-3gp,
+    &.ext-h264,
+    &.ext-m4v,
+    &.ext-mkv,
+    &.ext-rm,
+    &.ext-vob,
+    &.ext-wmv {
+        background: radial-gradient(circle at 10% 10%, rgb(238, 73, 73), rgb(158, 49, 49));
+    }
+
+    &.ext-iso,
+    &.ext-bin,
+    &.ext-dat,
+    &.ext-toast,
+    &.ext-a,
+    &.ext-vcd {
+        background: radial-gradient(circle at 10% 10%, rgb(79, 153, 50), rgb(52, 100, 33));
+    }
+
+    &.ext-mp3,
+    &.ext-wav,
+    &.ext-aif,
+    &.ext-cda,
+    &.ext-mid,
+    &.ext-midi,
+    &.ext-mpa,
+    &.ext-ogg,
+    &.ext-wma,
+    &.ext-wpl {
+        background: radial-gradient(circle at 10% 10%, rgb(238, 73, 114), rgb(158, 48, 76));
+    }
+    
+    &.ext-ai,
+    &.ext-psd,
+    &.ext-fla {
+        background: radial-gradient(circle at 10% 10%, rgb(38, 216, 82), rgb(24, 133, 51));
+    }
+
+    &.ext-png,
+    &.ext-ico,
+    &.ext-ps,
+    &.ext-svg,
+    &.ext-jpg,
+    &.ext-jpeg,
+    &.ext-bmp,
+    &.ext-atf {
+        background: radial-gradient(circle at 10% 10%, rgb(238, 73, 169), rgb(160, 49, 114));
+    }
+
+    &.ext-woff,
+    &.ext-woff2,
+    &.ext-ttf,
+    &.ext-fnt,
+    &.ext-fon,
+    &.ext-otf,
+    &.ext-eot {
+        background: radial-gradient(circle at 10% 10%, rgb(238, 73, 169), rgb(160, 49, 114));
+    }
+
+    &.ext-git,
+    &.ext-pack,
+    &.ext-idx {
+        background: radial-gradient(circle at 10% 10%, rgb(59, 32, 179), rgb(34, 18, 105));
+    }
+
+
+    &.ext-pdf,
+    &.ext-doc,
+    &.ext-docx {
+        background: radial-gradient(circle at 10% 10%, rgb(146, 145, 216), rgb(96, 95, 141));
+    }
+
+    &.ext-apk,
+    &.ext-ipa,
+    &.ext-msi,
+    &.ext-exe,
+    &.ext-deb,
+    &.ext-dmg,
+    &.ext-swf,
+    &.ext-swc,
+    &.ext-swz,
+    &.ext-ane,
+    &.ext-jar,
+    &.ext-air,
+    &.ext-dll,
+    &.ext-jnilib,
+    &.ext-so {
+        background: radial-gradient(circle at 10% 10%, rgb(28, 140, 192), rgb(16, 83, 114));
     }
 }
