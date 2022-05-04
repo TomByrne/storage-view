@@ -6,6 +6,7 @@ import squarify from '../../utils/squarify';
 
 export interface JobsState {
     lastJobId: number,
+    current: number,
     jobs: JobInfo[],
 }
 
@@ -28,6 +29,7 @@ export enum JobState {
 
 const initialState: JobsState = {
     lastJobId: 0,
+    current: 0,
     jobs: [],
 };
 
@@ -63,7 +65,7 @@ const createAsync = createAsyncThunk(
             }
         })
         console.log("Begin job");
-        await invoke<string>('create_job', { id: id, path: path });
+        await invoke<string>('create_job', { id: id, path: path }); // Call out to rust
         const state = getState() as RootState;
         const job = state.jobs.jobs.find(j => j.id === id);
         if (job && job.state !== JobState.done) {
@@ -145,6 +147,11 @@ export const jobsSlice = createSlice({
     initialState,
     // The `reducers` field lets us define reducers and generate associated actions
     reducers: {
+        "set-current": (state, action) => {
+            const current = action.payload.current;
+            if(current < 0 || current >= state.jobs.length) console.warn("Ignoring set current, invalid index: ", current);
+            else state.current = current;
+        },
         progress: (state, action) => {
             //state = { ...state };
             const progress: JobProgress = action.payload;
@@ -197,6 +204,15 @@ export const jobsSlice = createSlice({
             job.state = JobState.done;
             squarify(job.root, job.aspectRatio);
             console.log("Job finished", current(job));
+        },
+        "remove": (state, action) => {
+            const index = state.jobs.findIndex(j => j.id === action.payload.job);
+            if (index === -1) {
+                console.warn(`Couldn't find job to remove: ${action.payload.job}`);
+                return
+            }
+            if(state.current >= index) state.current--;
+            state.jobs.splice(index, 1);
         }
     },
     // The `extraReducers` field lets the slice handle actions defined elsewhere,
@@ -211,6 +227,8 @@ export const jobsSlice = createSlice({
                     console.error("Job with ID already exists: ", job);
                     return;
                 }
+                state.lastJobId = jobBrief.id;
+                state.current = state.jobs.length;
                 state.jobs.push({
                     ...jobBrief,
                     state: JobState.doing,
@@ -235,7 +253,10 @@ export const findJob = (state: RootState, job: number) => state.jobs.jobs.find(j
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
-export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.jobs.length - 1];
+export const selectCurrent = (state: RootState) => state.jobs.current;
+export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.current];
+export const selectJobs = (state: RootState) => state.jobs.jobs;
+export const selectHasJobs = (state: RootState) => state.jobs.jobs.length > 0;
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.

@@ -1,9 +1,10 @@
 import './TreeMap.scss';
-import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
-import { createRef, useEffect } from 'react';
+import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import React, { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { useDispatch } from 'react-redux';
 import { NATURAL_SIZE } from '../../utils/squarify';
+import { Tooltip } from '@mui/material';
 
 
 interface TreeMapProps {
@@ -13,15 +14,15 @@ function TreeMap({ job }: TreeMapProps) {
   const treemapRef = createRef<HTMLDivElement>()
   const dimensions = useRefDimensions(treemapRef);
   const dispatch = useDispatch();
-  
+
 
   useEffect(() => {
     const aspectRatio = Math.round(dimensions.width / dimensions.height * 10) / 10;
-    if(job.aspectRatio === aspectRatio) return;
-    dispatch({ type:"jobs/set-aspect-ratio", payload:{ job:job.id, aspectRatio } })
+    if (job.aspectRatio === aspectRatio) return;
+    dispatch({ type: "jobs/set-aspect-ratio", payload: { job: job.id, aspectRatio } })
   }, [dimensions, dispatch, job]);
 
-  function getNodeChildren(node: FileNode, maxDepth:number) {
+  function getNodeChildren(node: FileNode, maxDepth: number) {
     if (!node.children) return;
     // return node.children?.map((c) => getNode(c));
 
@@ -39,34 +40,54 @@ function TreeMap({ job }: TreeMapProps) {
     </div>
   }
 
-  function formatMb(bytes:number): string{
-    return (bytes / 1000000).toPrecision(2);
+  function formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
   function getExt(file: string): string {
-      const ind = file.lastIndexOf('.');
-      if (ind === -1) return "";
-      else return file.substring(ind + 1).toLowerCase();
+    const ind = file.lastIndexOf('.');
+    if (ind === -1) return "";
+    else return file.substring(ind + 1).toLowerCase();
   }
 
-  function getNode(node: FileNode, maxDepth:number, extraClass: string = '') {
+  function getTooltip(node: FileNode, info: JobFileInfo) {
+    return <React.Fragment>
+      <h3>{info.name}</h3>
+      <p><b>Size:</b> {formatBytes(info.size)}</p>
+      <p><b>Path:</b> {info.path}</p>
+    </React.Fragment>
+  }
+
+  function getNode(node: FileNode, maxDepth: number, extraClass: string = '') {
     if (!node.info) return;
 
-    
-    const className = (node.info.is_dir ? "type-dir" : "type-file") +
-                      (!node.info.is_dir ? " ext-" + getExt(node.info.name) : '') +
-                      (` depth-${node.info.depth}`) +
-                      (maxDepth === 0 ? " max-depth" : '');
 
-    return <div key={node.info?.path} className={'node ' + className + ' ' + extraClass} style={{ left: node.pos_x + 'px', top: node.pos_y + 'px', width: node.pos_w + 'px', height: node.pos_h + 'px' }}>
-      <div className="label" style={{ top: (10 + node.info.depth * 30) + 'px', left: (10 + node.info.depth * 10) + 'px' }}>{`${node.info.depth + 1}. ${node.info.name}`} <span>({formatMb(node.info.size)}mb)</span> <span>{!maxDepth ? " - Reached max depth, children omitted" : ''}</span></div>
-      { maxDepth > 0 ? getNodeChildren(node, maxDepth-1) : null }
-    </div>
+    const className = (node.info.is_dir ? "type-dir" : "type-file") +
+      (!node.info.is_dir ? " ext-" + getExt(node.info.name) : '') +
+      (` depth-${node.info.depth}`) +
+      (maxDepth === 0 ? " max-depth" : '');
+
+    const elem =
+      <div key={node.info?.path} className={'node ' + className + ' ' + extraClass} style={{ left: node.pos_x + 'px', top: node.pos_y + 'px', width: node.pos_w + 'px', height: node.pos_h + 'px' }}>
+        {/* <div className="label" style={{ top: (10 + node.info.depth * 30) + 'px', left: (10 + node.info.depth * 10) + 'px' }}>{`${node.info.depth + 1}. ${node.info.name}`} <span>({formatMb(node.info.size)}mb)</span> <span>{!maxDepth ? " - Reached max depth, children omitted" : ''}</span></div> */}
+        {maxDepth > 0 ? getNodeChildren(node, maxDepth - 1) : null}
+      </div>;
+
+    if (node.info.is_dir) return elem;
+    else return <Tooltip title={getTooltip(node, node.info)}>{elem}</Tooltip>;
   }
 
   return (
     <div id="tree-cont" ref={treemapRef}>
-      <div id="scale-cont" style={{ transform:`scaleY(${dimensions.height / NATURAL_SIZE}) scaleX(${dimensions.width / (NATURAL_SIZE * job.aspectRatio)})` }}>
+      <div id="scale-cont" style={{ transform: `scaleY(${dimensions.height / NATURAL_SIZE}) scaleX(${dimensions.width / (NATURAL_SIZE * job.aspectRatio)})` }}>
         {getNode(job.root, 10, "root-node")}
       </div>
     </div>

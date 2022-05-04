@@ -1,39 +1,31 @@
-import './App.scss';
-import NewJobDialog from './dialog/NewJobDialog';
+import { useSelector } from "react-redux";
+import { selectJob, selectHasJobs } from "../store/jobsSlice/jobsSlice";
+import NewFilePathJobModal from "./modal/NewFilePathJobModal";
+import ActionMenu from "./shell/ActionMenu";
 import JobTab from './JobTab';
-import { useSelector } from 'react-redux';
-import { selectJob, JobInfo, JobState } from '../store/jobsSlice/jobsSlice';
-import { useState } from 'react';
+import { Box } from "@mui/material";
+import React from "react";
 
-function App() {
-  const job = useSelector(selectJob);
-  
-  const [showNew, setShowNew] = useState(false);
-
-  function toggleShowNew(){
-    setShowNew(!showNew);
-  }
-
-  function getMainView(job:JobInfo){
-    let ret = [];
-    if(job) {
-      // ret.push(<button key="new-job-btn" onClick={toggleShowNew} >New Scan</button>);
-      if(job.state === JobState.done) ret.push(<JobTab key="job-tab" job={job}/>);
-      else ret.push(<div key="working-msg">Working</div>);
-    }
-    
-    if(!job || showNew) {
-      ret.push(<NewJobDialog key="new-job" closable={!!job} onClose={toggleShowNew}/>);
-    }
-
-    return ret;
-  }
-
-  return (
-    <div className="App">
-      { getMainView(job) }
-    </div>
-  );
+const stackStyle = {
+    display: 'flex',
+    flexDirection: "column",
+    height: '100%',
+}
+const jobStyle = {
+    flexGrow: 1,
 }
 
-export default App;
+export default function App() {
+    const hasJobs = useSelector(selectHasJobs);
+    const currentJob = useSelector(selectJob);
+
+    return <React.Fragment>
+        <NewFilePathJobModal open={!hasJobs} />
+        <Box sx={stackStyle}>
+            <ActionMenu />
+            <Box sx={jobStyle}>
+                <JobTab job={currentJob} />
+            </Box>
+        </Box>
+    </React.Fragment>;
+}
