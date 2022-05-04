@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
 import { createJob } from '../../store/jobsSlice/jobsSlice';
 import { dialog } from '@tauri-apps/api';
-import { FolderOpen } from "@mui/icons-material";
 import { Box } from "@mui/system";
 
 interface NewFilePathJobModalProps {
