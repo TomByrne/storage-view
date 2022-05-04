@@ -55,7 +55,7 @@ export default function NewFilePathJobModal({
             <TextField sx={fieldStyle} value={path} multiline minRows={3} />
         </DialogContent>
         <DialogActions>
-            <Button onClick={browse}><FolderOpen /><Box>Browse</Box></Button>
+            <Button onClick={browse}><Box>Browse</Box></Button>
 
             <Button onClick={beginScan} disabled={!path}>
                 Begin Scan

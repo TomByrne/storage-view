@@ -51,7 +51,7 @@ export default function ActionMenu() {
                                 component="div"
                                 onClick={() => removeJob(job.id)}
                             >
-                                <Close />
+                                <Close fontSize="small"/>
                             </IconButton>
 
                         </span>
