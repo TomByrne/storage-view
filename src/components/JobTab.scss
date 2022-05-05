@@ -1,22 +1,31 @@
+$left-col-width: max(20%, 300px);
+
 .job-layout {
     position: relative;
     width: 100%;
     height: 100%;
 
-    > * {
+    >* {
         position: absolute;
         top: 0;
         height: 100%;
     }
 
-    > .tree-view {
+    >.job-drawer {
         left: 0;
-        width: 400px;
+        width: $left-col-width;
         overflow-y: auto;
+        overflow-x: hidden;
+        
+        .job-drawer-paper {
+            position: relative !important;
+            height: 100% !important;
+        }
     }
 
-    > .tree-map {
-        left: 400px;
-        width: calc(100% - 400px);
+    >.tree-map {
+        left: $left-col-width;
+        width: calc(100% - $left-col-width);
     }
+
 }

@@ -15,6 +15,7 @@ export default function TreeView({
     job,
     className
 }: TreeViewProps) {
+    
     const renderTree = (node: FileNode) => {
       if (!node.info) return;
         return <TreeItem key={node.info.path} nodeId={node.info.path} label={`${node.name} (${formatBytes(node.info.size)})`}>
