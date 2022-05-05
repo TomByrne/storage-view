@@ -31,7 +31,7 @@ function JobTab({ job }: JobTabProps) {
         <JobSummary job={job} className="job-state"/>
         <TreeView job={job} className="tree-view"/>
       </Drawer>
-      {/* <TreeMap job={job} className="tree-map"/> */}
+      <TreeMap job={job} className="tree-map"/>
   </Box>
 }
 
