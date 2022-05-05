@@ -1,8 +1,9 @@
 import './JobSummary.scss';
-import { JobInfo, restartJob } from '../../store/jobsSlice/jobsSlice';
+import { restartJob } from '../../store/jobsSlice/jobsSlice';
 import { IconButton, Paper } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
 import { useAppDispatch } from '../../store/hooks';
+import { JobInfo } from '../../store/jobsSlice/types';
 
 
 interface TreeViewProps {

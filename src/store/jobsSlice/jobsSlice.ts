@@ -3,39 +3,10 @@ import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 import squarify from '../../utils/squarify';
-import { Root } from 'react-dom/client';
+import { startJob, endJob, getNode } from './getNode';
+import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 
-export interface JobsState {
-    lastJobId: number,
-    current: number,
-    jobs: JobInfo[],
-}
 
-export interface JobBrief {
-    id: number,
-    path: string,
-}
-
-export interface JobInfo extends JobBrief {
-    root: FileNode,
-    state: JobState,
-    aspectRatio: number,
-}
-
-export enum JobState {
-    idle = "idle",
-    doing = "doing",
-    done = "done",
-    failed = "failed",
-}
-
-const initialState: JobsState = {
-    lastJobId: 0,
-    current: 0,
-    jobs: [],
-};
-
-const FILENODE_CACHE: Record<number, Record<string, FileNode>> = {};
 
 // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(runJobAsync("C:\"))`. This
@@ -59,7 +30,7 @@ const runJobAsync = createAsyncThunk(
             },
         });
 
-        FILENODE_CACHE[id] = {};
+        startJob(id);
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
             console.log("create_job/prog: ", prog.job, prog.done, prog.files.length, prog.files);
@@ -84,7 +55,7 @@ const runJobAsync = createAsyncThunk(
         await invoke<string>('create_job', { id: job.id, path: job.path }); // Call out to rust
         job = findJob(getState() as RootState, id);
         if (job && job.state !== JobState.done) {
-            delete FILENODE_CACHE[id];
+            endJob(id);
             await dispatch({
                 type: "jobs/set-state",
                 payload: {
@@ -106,56 +77,12 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.value = file.size;
 }
 
-const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
-function getNode(job: JobInfo, file_name: string, file_path: string, update?: boolean): FileNode {
-    let node;
-    if (file_path === job.path) node = job.root;
-    else node = FILENODE_CACHE[job.id][file_path];
+const initialState: JobsState = {
+    lastJobId: 0,
+    current: 0,
+    jobs: [],
+};
 
-    if (node && !update) {
-        return node;
-    }
-    if (node) {
-        node = { ...node }
-    } else {
-        node = {
-            name: file_name,
-
-            pos_x: 0,
-            pos_y: 0,
-            pos_w: 0,
-            pos_h: 0,
-        };
-    }
-
-    if (file_path !== job.path) {
-        // Not root node, find parent
-        const match = file_path.match(path_regex);
-        if (!match || match.length < 4) {
-            let msg = "Failed to match path: " + file_path;
-            console.log(msg);
-            throw new Error(msg);
-        }
-
-        const parent_path = match[1];
-        const parent_name = match[3];
-        const parent = getNode(job, parent_name, parent_path, update);
-
-        if (!parent.map) parent.map = {};
-        else parent.map = { ...parent.map };
-        parent.map[file_name] = node;
-
-        if (!parent.children) parent.children = [];
-        parent.children = parent.children.filter((n) => n.name !== file_name);
-        parent.children.push(node);
-    } else {
-        job.root = node;
-    }
-
-    FILENODE_CACHE[job.id][file_path] = node;
-
-    return node;
-}
 
 export const jobsSlice = createSlice({
     name: 'jobs',
@@ -165,13 +92,15 @@ export const jobsSlice = createSlice({
         "create": (state, action) => {
             const id = state.lastJobId++;
             if(action.payload.setCurrent) state.current = state.jobs.length;
+            const path = action.payload.path;
             const job = {
                 id,
-                path: action.payload.path,
+                path,
                 state: JobState.idle,
                 aspectRatio: 1,
                 root: {
                     name: "",
+                    path: path,
 
                     pos_x: 0,
                     pos_y: 0,
@@ -260,8 +189,11 @@ export const jobsSlice = createSlice({
                 return;
             }
             job.state = JobState.idle;
+
+            //TODO: see if we can skip this
             job.root = {
                 name: "",
+                path: job.path,
 
                 pos_x: 0,
                 pos_y: 0,
@@ -315,36 +247,9 @@ export const restartJob = (id: number): AppThunk => (
 export default jobsSlice.reducer;
 
 
-export interface FileNode {
-    info?: JobFileInfo,
-    map?: Record<string, FileNode>,
-    children?: FileNode[],
-    name: string,
-    value?: number,
-    // className?: string,
-
-    // Fractions
-    pos_x: number;
-    pos_y: number;
-    pos_w: number;
-    pos_h: number;
-}
-
 // From Rust
 export interface JobProgress {
     job: number,
     files: JobFileInfo[],
     done: boolean,
-}
-export interface JobFileInfo {
-    path: string,
-    name: string,
-    is_dir: boolean,
-
-    depth: number,
-    index: number,
-    total: number,
-
-    time: number, // seconds
-    size: number, // bytes
 }

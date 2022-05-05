@@ -1,4 +1,4 @@
-import { FileNode } from "../store/jobsSlice/jobsSlice";
+import { FileNode } from "../store/jobsSlice/types";
 
 //TODO: get rid of this
 export const NATURAL_SIZE = 1000;

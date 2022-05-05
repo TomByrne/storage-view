@@ -1,5 +1,5 @@
 import './TreeMap.scss';
-import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/types';
 import React, { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { useDispatch } from 'react-redux';

@@ -1,11 +1,9 @@
-import { Box, Drawer, Toolbar, Typography, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 import { useState } from 'react';
-import { JobInfo, JobState } from '../store/jobsSlice/jobsSlice';
+import { JobInfo } from '../store/jobsSlice/types';
 import './JobTab.scss';
-import TreeMap from './panel/TreeMap';
 import TreeView from './panel/TreeView';
 import JobSummary from './panel/JobSummary';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
 
 interface JobTabProps {
   job: JobInfo;
@@ -32,7 +30,7 @@ function JobTab({ job }: JobTabProps) {
         <JobSummary job={job} className="job-state"/>
         <TreeView job={job} className="tree-view"/>
       </Drawer>
-      <TreeMap job={job} className="tree-map"/>
+      {/* <TreeMap job={job} className="tree-map"/> */}
   </Box>
 }
 
