@@ -4,6 +4,7 @@ import { JobInfo } from '../store/jobsSlice/types';
 import './JobTab.scss';
 import TreeView from './panel/TreeView';
 import JobSummary from './panel/JobSummary';
+import TreeMap from './panel/TreeMap';
 
 interface JobTabProps {
   job: JobInfo;
@@ -30,7 +31,7 @@ function JobTab({ job }: JobTabProps) {
         <JobSummary job={job} className="job-state"/>
         <TreeView job={job} className="tree-view"/>
       </Drawer>
-      {/* <TreeMap job={job} className="tree-map"/> */}
+      <TreeMap job={job} className="tree-map"/>
   </Box>
 }
 
