@@ -1,3 +1,4 @@
+import './TreeView.scss';
 import MuiTreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
 import Add from '@mui/icons-material/Add';
@@ -6,16 +7,13 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
 import formatBytes from '../../utils/formatBytes';
 
 
-const treeStyle = {
-    padding: '10px 0',
-    maxWidth: 400,
-}
-
 interface TreeViewProps {
     job: JobInfo;
+    className: string;
 }
 export default function TreeView({
-    job
+    job,
+    className
 }: TreeViewProps) {
     const renderTree = (node: FileNode) => {
       if (!node.info) return;
@@ -27,14 +25,15 @@ export default function TreeView({
     };
 
     return (
+        <div className={className}>
         <MuiTreeView
             aria-label="rich object"
             defaultCollapseIcon={<Remove />}
             defaultExpanded={['root']}
             defaultExpandIcon={<Add />}
-            sx={treeStyle}
         >
             {renderTree(job.root)}
         </MuiTreeView>
+        </div>
     );
 }

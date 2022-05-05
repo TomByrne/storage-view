@@ -14,8 +14,8 @@ function JobTab({ job }: JobTabProps) {
 
   return (
     <Box className='job-layout'>
-      <TreeView job={job}/>
-      <TreeMap job={job} />
+      <TreeView job={job} className="tree-view"/>
+      <TreeMap job={job} className="tree-map"/>
     </Box>
   );
 }
