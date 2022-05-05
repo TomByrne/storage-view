@@ -5,6 +5,7 @@ export interface FileNode {
     name: string,
     path: string,
     value?: number,
+    child_count?: number,
     // className?: string,
 
     // Fractions
@@ -17,6 +18,7 @@ export interface JobFileInfo {
     path: string,
     name: string,
     is_dir: boolean,
+    child_count: number,
 
     depth: number,
     index: number,
@@ -39,8 +41,10 @@ export interface JobBrief {
 
 export interface JobInfo extends JobBrief {
     root: FileNode,
+    name: string,
     state: JobState,
     aspectRatio: number,
+    percent: number, // estimate of job progress, as fract
 }
 
 export enum JobState {

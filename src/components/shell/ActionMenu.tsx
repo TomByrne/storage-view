@@ -5,6 +5,7 @@ import { dialog } from '@tauri-apps/api';
 import { Add, Close } from "@mui/icons-material";
 import { useCallback } from "react";
 import { useSelector } from "react-redux";
+import { JobInfo, JobState } from "../../store/jobsSlice/types";
 
 export default function ActionMenu() {
 
@@ -37,6 +38,11 @@ export default function ActionMenu() {
 
     if(jobs.length === 0) return null;
 
+    function jobLabel(job:JobInfo):string { 
+        return `${job.name}` + 
+            (job.state === JobState.doing || true ? ` (${Math.round(job.percent * 100)}%)` : "");
+    }
+
     return <Tabs
             value={current}
             onChange={tabClick}
@@ -46,7 +52,7 @@ export default function ActionMenu() {
                     key={job.id}
                     label={
                         <span>
-                            Job #{job.id}
+                            {jobLabel(job)}
                             <IconButton
                                 component="div"
                                 onClick={() => removeJob(job.id)}

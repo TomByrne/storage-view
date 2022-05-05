@@ -3,10 +3,9 @@ import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 import squarify from './squarify';
-import { startJob, endJob, getNode } from './getNode';
+import { startJob, endJob, getNode, path_regex } from './getNode';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import lodash from "lodash";
-
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -80,6 +79,7 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.info = file;
     node.name = file.name;
     node.value = file.size;
+    node.child_count = file.child_count;
 }
 
 const initialState: JobsState = {
@@ -98,14 +98,18 @@ export const jobsSlice = createSlice({
             const id = state.lastJobId++;
             if(action.payload.setCurrent) state.current = state.jobs.length;
             const path = action.payload.path;
+            const match = path.match(path_regex);
+            const name = (match ? match[3] : path);
             const job = {
                 id,
                 path,
                 state: JobState.idle,
                 aspectRatio: 1,
+                percent: 0,
+                name: name,
                 root: {
-                    name: "",
-                    path: path,
+                    name: name,
+                    path,
 
                     pos_x: 0,
                     pos_y: 0,
@@ -125,31 +129,31 @@ export const jobsSlice = createSlice({
             //state = { ...state };
             const job: JobInfo = action.payload.job;
             const progress: JobProgress = action.payload;
-            // const job = state.jobs.find(j => j.id === progress.job);
-            // if (!job) {
-            //     console.warn(`Ignoring update for expired job: ${progress.job}`, progress);
-            //     return
-            // }
-            // const new_job = { ...job };
-            // state.jobs = state.jobs.map((j) => j.id === progress.job ? new_job : j );
+
             for (const file of progress.files) updateJobFile(job, file);
 
-            // const ret = {
-            //     ...state,
-            //     jobs: state.jobs.map((j) => j.id === progress.job ? new_job : j)
-            // }
-
-            // return ret;
-        },
-        "file-update": (state, action) => {
-            const payload: { job: number, file: JobFileInfo } = action.payload;
-            const job = state.jobs.find(j => j.id === payload.job);
-            if (!job) {
-                console.warn(`Ignoring update for expired job: ${payload.job}`, action.payload);
-                return
+            const real_job = state.jobs.find(j => j.id === job.id);
+            if(real_job) {
+                // calc job percentage
+                if(job.root.children){
+                    real_job.percent = calcPercent(job.root);
+                    // let done = job.root.children.reduce((val, c) => c.info ? val+1 : val, 0);
+                    // real_job.percent = done / (job.root.child_count || job.root.children.length);
+                } else{
+                    real_job.percent = 0;
+                }
             }
-            updateJobFile(job, payload.file);
+
         },
+        // "file-update": (state, action) => {
+        //     const payload: { job: number, file: JobFileInfo } = action.payload;
+        //     const job = state.jobs.find(j => j.id === payload.job);
+        //     if (!job) {
+        //         console.warn(`Ignoring update for expired job: ${payload.job}`, action.payload);
+        //         return
+        //     }
+        //     updateJobFile(job, payload.file);
+        // },
         "set-aspect-ratio": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (!job) {
@@ -198,6 +202,7 @@ export const jobsSlice = createSlice({
                 return;
             }
             job.state = JobState.idle;
+            job.percent = 0;
 
             //TODO: see if we can skip this
             job.root = {
@@ -212,6 +217,16 @@ export const jobsSlice = createSlice({
         },
     },
 });
+
+function calcPercent(node:FileNode):number {
+    if(!node.children) return 0;
+    const count:number = node.child_count || node.children?.length || 0;
+    return node.children.reduce((val, c) => {
+        if(c.info) return val + 1;
+        else if(c.children) return val + calcPercent(c);
+        else return val;
+    }, 0) / count;
+}
 
 export const findJob = (state: RootState, job: number) => state.jobs.jobs.find(j => j.id === job);
 

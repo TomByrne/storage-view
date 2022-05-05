@@ -2,7 +2,7 @@ import { FileNode, JobInfo } from "./types";
 
 const FILENODE_CACHE: Record<number, Record<string, FileNode>> = {};
 
-const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
+export const path_regex = /(.*(\\|\/)(.*))(\\|\/).*/;
 export function getNode(job: JobInfo, file_name: string, file_path: string, update?: boolean): FileNode {
     let node;
     if (file_path === job.path) node = job.root;
