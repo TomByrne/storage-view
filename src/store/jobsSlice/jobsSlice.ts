@@ -2,9 +2,10 @@ import { createAsyncThunk, createSlice, current } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
-import squarify from '../../utils/squarify';
+import squarify from './squarify';
 import { startJob, endJob, getNode } from './getNode';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
+import lodash from "lodash";
 
 
 
@@ -20,7 +21,7 @@ const runJobAsync = createAsyncThunk(
         if(!job) {
             throw "Job not found: " + id;
         }
-
+        job = lodash.cloneDeep(job);
         
         await dispatch({
             type: "jobs/set-state",
@@ -30,6 +31,9 @@ const runJobAsync = createAsyncThunk(
             },
         });
 
+        // Create a temporary copy of the job to store progress in
+        // const tempJob = current(job);
+
         startJob(id);
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
@@ -37,7 +41,7 @@ const runJobAsync = createAsyncThunk(
 
             dispatch({
                 type: "jobs/progress",
-                payload: prog,
+                payload: { ...prog, job:job },
             });
 
 
@@ -46,6 +50,7 @@ const runJobAsync = createAsyncThunk(
                     type: "jobs/finish",
                     payload: {
                         job: prog.job,
+                        root: job?.root,
                     },
                 });
                 unlisten();
@@ -71,7 +76,7 @@ const runJobAsync = createAsyncThunk(
 function updateJobFile(job: JobInfo, file: JobFileInfo) {
     if (file.name === "src")
         console.log("updateJobFile.start: ", job, file);
-    let node: FileNode = getNode(job, file.name, file.path, true);
+    let node: FileNode = getNode(job, file.name, file.path, false);
     node.info = file;
     node.name = file.name;
     node.value = file.size;
@@ -116,25 +121,25 @@ export const jobsSlice = createSlice({
             if(current < 0 || current >= state.jobs.length) console.warn("Ignoring set current, invalid index: ", current);
             else state.current = current;
         },
-        progress: (state, action) => {
+        "progress": (state, action) => {
             //state = { ...state };
+            const job: JobInfo = action.payload.job;
             const progress: JobProgress = action.payload;
-            const job = state.jobs.find(j => j.id === progress.job);
-            if (!job) {
-                console.warn(`Ignoring update for expired job: ${progress.job}`, progress);
-                return
-            }
-            const new_job = { ...job };
+            // const job = state.jobs.find(j => j.id === progress.job);
+            // if (!job) {
+            //     console.warn(`Ignoring update for expired job: ${progress.job}`, progress);
+            //     return
+            // }
+            // const new_job = { ...job };
             // state.jobs = state.jobs.map((j) => j.id === progress.job ? new_job : j );
-            for (const file of progress.files) updateJobFile(new_job, file);
+            for (const file of progress.files) updateJobFile(job, file);
 
-            //return state;
-            const ret = {
-                ...state,
-                jobs: state.jobs.map((j) => j.id === progress.job ? new_job : j)
-            }
+            // const ret = {
+            //     ...state,
+            //     jobs: state.jobs.map((j) => j.id === progress.job ? new_job : j)
+            // }
 
-            return ret;
+            // return ret;
         },
         "file-update": (state, action) => {
             const payload: { job: number, file: JobFileInfo } = action.payload;
@@ -165,9 +170,13 @@ export const jobsSlice = createSlice({
                 console.warn(`Couldn't find job to finish: ${action.payload.job}`);
                 return
             }
+            const root = action.payload.root;
+            if(root) {
+                job.root = root;
+            }
             job.state = JobState.done;
             squarify(job.root, job.aspectRatio);
-            console.log("Job finished", current(job));
+            console.log("Job finished");
         },
         "remove": (state, action) => {
             const index = state.jobs.findIndex(j => j.id === action.payload.job);

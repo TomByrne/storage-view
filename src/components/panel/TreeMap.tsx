@@ -3,7 +3,7 @@ import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/types';
 import React, { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { useDispatch } from 'react-redux';
-import { NATURAL_SIZE } from '../../utils/squarify';
+import { NATURAL_SIZE } from '../../store/jobsSlice/squarify';
 import { Tooltip } from '@mui/material';
 import formatBytes from '../../utils/formatBytes';
 
