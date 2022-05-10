@@ -6,6 +6,10 @@ import { Add, Close } from "@mui/icons-material";
 import { useCallback } from "react";
 import { useSelector } from "react-redux";
 
+const style ={
+    flexShrink: 0,
+}
+
 export default function ActionMenu() {
 
     const dispatch = useAppDispatch();
@@ -40,6 +44,7 @@ export default function ActionMenu() {
     return <Tabs
             value={current}
             onChange={tabClick}
+            sx={style}
         >
             {jobs.map(job => (
                 <Tab

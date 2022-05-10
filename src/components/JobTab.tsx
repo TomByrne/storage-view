@@ -1,7 +1,8 @@
 import { Box } from '@mui/material';
 import { JobInfo, JobState } from '../store/jobsSlice/jobsSlice';
 import './JobTab.scss';
-import TreeMap from './panel/TreeMap';
+// import TreeMap from './panel/TreeMap';
+import TreeMap2 from './panel/TreeMap2';
 import TreeView from './panel/TreeView';
 
 
@@ -15,7 +16,7 @@ function JobTab({ job }: JobTabProps) {
   return (
     <Box className='job-layout'>
       <TreeView job={job}/>
-      <TreeMap job={job} />
+      <TreeMap2 job={job} />
     </Box>
   );
 }

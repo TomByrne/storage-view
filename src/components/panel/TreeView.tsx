@@ -8,7 +8,8 @@ import formatBytes from '../../utils/formatBytes';
 
 const treeStyle = {
     padding: '10px 0',
-    maxWidth: 400,
+    width: '30%',
+    maxWidth: 350,
 }
 
 interface TreeViewProps {

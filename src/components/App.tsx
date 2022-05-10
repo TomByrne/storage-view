@@ -10,9 +10,7 @@ const stackStyle = {
     display: 'flex',
     flexDirection: "column",
     height: '100%',
-}
-const jobStyle = {
-    flexGrow: 1,
+    overflow: "hidden",
 }
 
 export default function App() {
@@ -23,9 +21,7 @@ export default function App() {
         <NewFilePathJobModal open={!hasJobs} />
         <Box sx={stackStyle}>
             <ActionMenu />
-            <Box sx={jobStyle}>
-                <JobTab job={currentJob} />
-            </Box>
+            <JobTab job={currentJob} />
         </Box>
     </React.Fragment>;
 }
