@@ -99,7 +99,7 @@ export const jobsSlice = createSlice({
             if(action.payload.setCurrent) state.current = state.jobs.length;
             const path = action.payload.path;
             const match = path.match(path_regex);
-            const name = (match ? match[3] : path);
+            const name = (match ? match[3] || path : path);
             const job = {
                 id,
                 path,
