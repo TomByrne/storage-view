@@ -34,33 +34,25 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
     output: OutputOption::All,
   };
 
-  // fn start_handler(fs: FileStats, data: &JobData) {
-  //   if fs.is_dir {
-  //     end_handler(fs, data);
-  //   }
-  // }
+  fn prog_handler(fs: FileStats, data: &JobData) {
+    if fs.is_dir && fs.path == data.path { // Is root node
+      end_handler(fs, data);
+    }
+  }
 
   fn end_handler(fs: FileStats, data: &JobData) {
-    // println!("end_handler: {} {}", fs.path, fs.size_b);
     
     let file = JobFileInfo {
       path: fs.path,
       name: fs.name,
       is_dir: fs.is_dir,
+      child_count: fs.child_count,
       depth: fs.depth,
       index: fs.index,
       total: fs.total,
       time: fs.time_s,
       size: fs.size_b,
     };
-
-    // let mut files = Vec::new();
-    // files.push(file);
-    // let prog = JobProgress {
-    //   job: data.job,
-    //   files: files,
-    // };
-    // data.handle.emit_all("create_job/prog", prog).unwrap();
 
     
     let mut pending = data.pending.lock().unwrap();
@@ -93,6 +85,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
 
   let job_data: JobData = JobData {
     job: id,
+    path: path.clone(),
     handle: handle,
     pending: Mutex::new(Vec::new()),
   };
@@ -100,7 +93,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   let handlers: Handlers<JobData> = Handlers {
     post: None,
     start: None,
-    prog: None,
+    prog: Some(prog_handler),
     end: Some(end_handler),
   };
 
@@ -122,6 +115,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
 
 struct JobData {
   job: i32,
+  path: String,
   handle: AppHandle,
   pending: Mutex<Vec<JobFileInfo>>,
 }
@@ -138,6 +132,7 @@ struct JobFileInfo {
   path: String,
   name: String,
   is_dir: bool,
+  child_count: usize,
   depth: u32,
   index: u32,
   total: u32,

@@ -1,24 +1,38 @@
-import { Box } from '@mui/material';
-import { JobInfo, JobState } from '../store/jobsSlice/jobsSlice';
+import { Box, Drawer } from '@mui/material';
+import { useState } from 'react';
+import { JobInfo } from '../store/jobsSlice/types';
 import './JobTab.scss';
-// import TreeMap from './panel/TreeMap';
-import TreeMap2 from './panel/TreeMap2';
 import TreeView from './panel/TreeView';
-
-
+import JobSummary from './panel/JobSummary';
+import TreeMap from './panel/TreeMap2';
 
 interface JobTabProps {
   job: JobInfo;
 }
-function JobTab({ job }: JobTabProps) {
-  if (!job || job.state !== JobState.done) return null;
 
-  return (
-    <Box className='job-layout'>
-      <TreeView job={job}/>
-      <TreeMap2 job={job} />
-    </Box>
-  );
+function JobTab({ job }: JobTabProps) {
+
+  const [open] = useState(true);
+  
+  if (!job) return null;
+
+
+  return <Box className='job-layout' sx={{ display: 'flex' }}>
+      <Drawer
+        className='job-drawer'
+        classes={{ paper: 'job-drawer-paper' }}
+        variant="persistent"
+        open={open}
+        ModalProps={{
+          disablePortal: true, // Don't elevate to top level
+          keepMounted: true, // Better open performance on mobile.
+        }}
+      > 
+        <JobSummary job={job} className="job-state"/>
+        <TreeView job={job} className="tree-view"/>
+      </Drawer>
+      <TreeMap job={job} className="tree-map"/>
+  </Box>
 }
 
 export default JobTab;

@@ -1,26 +1,27 @@
+import './TreeView.scss';
 import MuiTreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
 import Add from '@mui/icons-material/Add';
 import Remove from '@mui/icons-material/Remove';
-import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import formatBytes from '../../utils/formatBytes';
-
-
-const treeStyle = {
-    padding: '10px 0',
-    width: '30%',
-    maxWidth: 350,
-}
 
 interface TreeViewProps {
     job: JobInfo;
+    className: string;
 }
 export default function TreeView({
-    job
+    job,
+    className
 }: TreeViewProps) {
+
+    function getLabel(node: FileNode): string {
+        if(node.info) return `${node.name} (${formatBytes(node.info.size)})`;
+        else return `${node.name} (calculating...)`;
+    }
+    
     const renderTree = (node: FileNode) => {
-      if (!node.info) return;
-        return <TreeItem key={node.info.path} nodeId={node.info.path} label={`${node.name} (${formatBytes(node.info.size)})`}>
+        return <TreeItem key={node.path} nodeId={node.path} label={getLabel(node)}>
             {Array.isArray(node.children)
                 ? node.children.map((child) => renderTree(child))
                 : null}
@@ -28,14 +29,15 @@ export default function TreeView({
     };
 
     return (
+        <div className={className}>
         <MuiTreeView
             aria-label="rich object"
-            defaultCollapseIcon={<Remove />}
             defaultExpanded={['root']}
+            defaultCollapseIcon={<Remove />}
             defaultExpandIcon={<Add />}
-            sx={treeStyle}
         >
             {renderTree(job.root)}
         </MuiTreeView>
+        </div>
     );
 }

@@ -1,17 +1,21 @@
 import './TreeMap.scss';
-import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import { FileNode, JobFileInfo, JobInfo } from '../../store/jobsSlice/types';
 import React, { createRef, useEffect } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { useDispatch } from 'react-redux';
-import { NATURAL_SIZE } from '../../utils/squarify';
+import { NATURAL_SIZE } from '../../store/jobsSlice/squarify';
 import { Tooltip } from '@mui/material';
 import formatBytes from '../../utils/formatBytes';
 
 
 interface TreeMapProps {
   job: JobInfo;
+  className: string;
 }
-function TreeMap({ job }: TreeMapProps) {
+function TreeMap({
+  job,
+  className
+}: TreeMapProps) {
   const treemapRef = createRef<HTMLDivElement>()
   const dimensions = useRefDimensions(treemapRef);
   const dispatch = useDispatch();
@@ -77,7 +81,7 @@ function TreeMap({ job }: TreeMapProps) {
   }
 
   return (
-    <div id="tree-cont" ref={treemapRef}>
+    <div id="tree-cont" className={className} ref={treemapRef}>
       <div id="scale-cont" style={{ transform: `scaleY(${dimensions.height / NATURAL_SIZE}) scaleX(${dimensions.width / (NATURAL_SIZE * job.aspectRatio)})` }}>
         {getNode(job.root, 10, "root-node")}
       </div>

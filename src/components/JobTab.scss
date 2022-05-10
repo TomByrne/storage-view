@@ -1,12 +1,31 @@
+$left-col-width: max(20%, 300px);
+
 .job-layout {
-    display: flex;
-    flex-direction: row;
     position: relative;
     width: 100%;
     height: calc(100% - 60px);
 
-    > * {
-        flex-grow: 1;
+    >* {
+        position: absolute;
+        top: 0;
         height: 100%;
     }
+
+    >.job-drawer {
+        left: 0;
+        width: $left-col-width;
+        overflow-y: auto;
+        overflow-x: hidden;
+        
+        .job-drawer-paper {
+            position: relative !important;
+            height: 100% !important;
+        }
+    }
+
+    >.tree-map {
+        left: $left-col-width;
+        width: calc(100% - $left-col-width);
+    }
+
 }
