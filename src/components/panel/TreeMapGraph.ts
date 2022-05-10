@@ -1,5 +1,5 @@
 import { Application, Sprite, Texture } from 'pixi.js'
-import { FileNode, JobInfo } from '../../store/jobsSlice/jobsSlice';
+import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import squarify from '../../utils/squarify2';
 
 

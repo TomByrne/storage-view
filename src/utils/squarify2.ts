@@ -1,4 +1,5 @@
-import { FileNode } from "../store/jobsSlice/jobsSlice";
+import { FileNode } from "../store/jobsSlice/types";
+
 
 export type CommitCallback = (node:FileNode, x:number, y:number, w:number, h:number) => boolean;
 
@@ -11,7 +12,8 @@ function squarify_recurse(node: FileNode, x:number, y:number, w: number, h: numb
     if (!node.children) return;
 
 
-    const children = node.children.concat([]).sort((f1, f2) => (f2.value || 0) - (f1.value || 0));
+    const children:FileNode[] = node.children.concat();
+    children.sort((f1, f2) => (f2.value || 0) - (f1.value || 0))
 
     let active_x = x;
     let active_y = y;

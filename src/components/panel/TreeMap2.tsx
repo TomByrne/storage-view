@@ -1,13 +1,17 @@
 import './TreeMap2.scss';
-import { JobInfo, JobState } from '../../store/jobsSlice/jobsSlice';
+import { JobInfo, JobState } from '../../store/jobsSlice/types';
 import { createRef, useEffect, useRef } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { TreeMapGraph } from "./TreeMapGraph";
 
 interface TreeMapProps {
     job: JobInfo;
+    className: string;
 }
-function TreeMap({ job }: TreeMapProps) {
+function TreeMap({
+    job,
+    className
+}: TreeMapProps) {
     const treemapRef = createRef<HTMLDivElement>();
     const dimensions = useRefDimensions(treemapRef);
 
@@ -43,7 +47,7 @@ function TreeMap({ job }: TreeMapProps) {
     }, [treemapRef, graph]);
 
     return (
-        <div id="tree-cont" ref={treemapRef}>
+        <div id="tree-cont" ref={treemapRef} className={className}>
         </div>
     );
 }

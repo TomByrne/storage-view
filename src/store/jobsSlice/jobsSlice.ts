@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, current } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
@@ -16,11 +16,11 @@ import lodash from "lodash";
 const runJobAsync = createAsyncThunk(
     'jobs/run',
     async (id: number, { dispatch, getState }) => {
-        let job = findJob(getState() as RootState, id);
-        if(!job) {
-            throw "Job not found: " + id;
+        let foundJob = findJob(getState() as RootState, id);
+        if(!foundJob) {
+            throw new Error("Job not found: " + id);
         }
-        job = lodash.cloneDeep(job);
+        let job:JobInfo = lodash.cloneDeep(foundJob);
         
         await dispatch({
             type: "jobs/set-state",
@@ -57,8 +57,8 @@ const runJobAsync = createAsyncThunk(
         })
         console.log("Begin job");
         await invoke<string>('create_job', { id: job.id, path: job.path }); // Call out to rust
-        job = findJob(getState() as RootState, id);
-        if (job && job.state !== JobState.done) {
+        foundJob = findJob(getState() as RootState, id);
+        if (foundJob && foundJob.state !== JobState.done) {
             endJob(id);
             await dispatch({
                 type: "jobs/set-state",
