@@ -17,11 +17,6 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
         node = {
             name: file_name,
             path: file_path,
-
-            pos_x: 0,
-            pos_y: 0,
-            pos_w: 0,
-            pos_h: 0,
         };
     }
 

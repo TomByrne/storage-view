@@ -1,13 +1,14 @@
 import { Application, Sprite, Texture } from 'pixi.js'
-import { FileNode, JobInfo } from '../../store/jobsSlice/types';
+import { FileNode, FileNodeTheme, JobInfo } from '../../store/jobsSlice/types';
 import squarify from '../../utils/squarify2';
+import { defaultTheme } from '../../utils/themes';
 
 
-const canvas = document.createElement("canvas");
 
 const smallest_area = 2; // Files below this size will not be displayed
 
-function createGradientTexture(w = 100, h = 100):Texture {
+function createGradientTexture(colors:string[], w = 100, h = 100):Texture {
+    const canvas = document.createElement("canvas");
     var ctx:CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -15,9 +16,10 @@ function createGradientTexture(w = 100, h = 100):Texture {
     canvas.height = h;
     
     // Create gradient
-    var grd = ctx.createLinearGradient(0, 0, w, 0);
-    grd.addColorStop(0, "red");
-    grd.addColorStop(1, "white");
+    var grd = ctx.createRadialGradient(0, 0, 0, 0, 0, w);
+    for(var i=0; i<colors.length; i++) {
+        grd.addColorStop(i, colors[i]);
+    }
     
     // Fill with gradient
     ctx.fillStyle = grd;
@@ -26,10 +28,10 @@ function createGradientTexture(w = 100, h = 100):Texture {
     return Texture.from(canvas);
 }
 
-const gradient = createGradientTexture(400, 400);
 
 
 const max_size = 4096;
+const gradient_cache:Record<string, Texture> = {};
 
 export class TreeMapGraph {
     app: Application;
@@ -85,10 +87,20 @@ export class TreeMapGraph {
         }
     }
 
+    getTexture(theme:FileNodeTheme | undefined): Texture {
+        theme = theme || defaultTheme;
+        let texture = gradient_cache[theme.id];
+        if(texture) return texture;
+
+        texture = createGradientTexture(theme.colors);
+        gradient_cache[theme.id] = texture;
+        return texture;
+    }
+
     commitSize(node:FileNode, x:number, y:number, w:number, h:number): boolean {
         const too_small = Math.sqrt(w*w + h*h) < smallest_area;
         if(node.info?.is_dir === false || too_small) {
-            const rect = new Sprite(gradient);
+            const rect = new Sprite(this.getTexture(node.theme));
             rect.x = x;
             rect.y = y;
             rect.width = w;

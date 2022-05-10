@@ -2,10 +2,10 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
-import squarify from './squarify';
 import { startJob, endJob, getNode, path_regex } from './getNode';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import lodash from "lodash";
+import { getTheme } from '../../utils/themes';
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -80,6 +80,7 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.name = file.name;
     node.value = file.size;
     node.child_count = file.child_count;
+    node.theme = getTheme(node);
 }
 
 const initialState: JobsState = {
@@ -110,11 +111,6 @@ export const jobsSlice = createSlice({
                 root: {
                     name: name,
                     path,
-
-                    pos_x: 0,
-                    pos_y: 0,
-                    pos_w: 0,
-                    pos_h: 0,
                 },
             }
             state.jobs.push(job);
@@ -145,24 +141,14 @@ export const jobsSlice = createSlice({
             }
 
         },
-        // "file-update": (state, action) => {
-        //     const payload: { job: number, file: JobFileInfo } = action.payload;
-        //     const job = state.jobs.find(j => j.id === payload.job);
+        // "set-aspect-ratio": (state, action) => {
+        //     const job = state.jobs.find(j => j.id === action.payload.job);
         //     if (!job) {
-        //         console.warn(`Ignoring update for expired job: ${payload.job}`, action.payload);
+        //         console.warn(`Ignoring update for expired job: ${action.payload.job}`, action.payload);
         //         return
         //     }
-        //     updateJobFile(job, payload.file);
+        //     job.aspectRatio = action.payload.aspectRatio;
         // },
-        "set-aspect-ratio": (state, action) => {
-            const job = state.jobs.find(j => j.id === action.payload.job);
-            if (!job) {
-                console.warn(`Ignoring update for expired job: ${action.payload.job}`, action.payload);
-                return
-            }
-            job.aspectRatio = action.payload.aspectRatio;
-            if (job.state === JobState.done) squarify(job.root, job.aspectRatio);
-        },
         "set-state": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (job) job.state = action.payload.state;
@@ -179,7 +165,6 @@ export const jobsSlice = createSlice({
                 job.root = root;
             }
             job.state = JobState.done;
-            squarify(job.root, job.aspectRatio);
             console.log("Job finished");
         },
         "remove": (state, action) => {
@@ -208,11 +193,6 @@ export const jobsSlice = createSlice({
             job.root = {
                 name: "",
                 path: job.path,
-
-                pos_x: 0,
-                pos_y: 0,
-                pos_w: 0,
-                pos_h: 0,
             }
         },
     },

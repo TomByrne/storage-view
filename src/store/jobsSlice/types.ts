@@ -1,5 +1,6 @@
 export interface FileNode {
     info?: JobFileInfo,
+    theme?: FileNodeTheme,
     map?: Record<string, FileNode>,
     children?: FileNode[],
     name: string,
@@ -9,10 +10,10 @@ export interface FileNode {
     // className?: string,
 
     // Fractions
-    pos_x: number;
-    pos_y: number;
-    pos_w: number;
-    pos_h: number;
+    // pos_x: number;
+    // pos_y: number;
+    // pos_w: number;
+    // pos_h: number;
 }
 export interface JobFileInfo {
     path: string,
@@ -43,7 +44,6 @@ export interface JobInfo extends JobBrief {
     root: FileNode,
     name: string,
     state: JobState,
-    aspectRatio: number,
     percent: number, // estimate of job progress, as fract
 }
 
@@ -52,4 +52,10 @@ export enum JobState {
     doing = "doing",
     done = "done",
     failed = "failed",
+}
+
+
+export interface FileNodeTheme {
+    id: string,
+    colors: string[],
 }
