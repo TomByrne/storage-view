@@ -7,6 +7,10 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import formatBytes from '../../utils/formatBytes';
 import { useDispatch } from 'react-redux';
 
+
+const nodeStyle = {
+    wordBreak: 'break-word',
+}
 interface TreeViewProps {
     job: JobInfo;
     className: string;
@@ -28,7 +32,7 @@ export default function TreeView({
     }
 
     const renderTree = (node: FileNode) => {
-        return <TreeItem key={node.path} nodeId={node.path} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
+        return <TreeItem key={node.path} nodeId={node.path} sx={nodeStyle} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
             {Array.isArray(node.children)
                 ? node.children.map((child) => renderTree(child))
                 : null}
