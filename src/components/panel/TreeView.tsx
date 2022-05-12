@@ -6,6 +6,7 @@ import Remove from '@mui/icons-material/Remove';
 import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import formatBytes from '../../utils/formatBytes';
 import { useDispatch } from 'react-redux';
+import React from 'react';
 
 const dummyTreeItems = [
     <TreeItem className="tree-node" key="dummy" nodeId="dummy" label="Loading..."/>
@@ -22,9 +23,11 @@ export default function TreeView({
 
     const dispatch = useDispatch();
 
-    function getLabel(node: FileNode): string {
-        if (node.info) return `${node.name} (${formatBytes(node.info.size)})`;
-        else return `${node.name} (calculating...)`;
+    function getLabel(node: FileNode) {
+        return <React.Fragment>
+            <span className="file-name">{node.name}</span>
+            <span className="file-size">{(node.info ? ' (' + formatBytes(node.info.size) + ')' : '(calculating...)')}</span>
+        </React.Fragment>;
     }
 
     function renderChildren(node: FileNode){
@@ -36,8 +39,15 @@ export default function TreeView({
         return node.children.map((child) => renderTree(child));
     }
 
+    function onContextMenu(e:React.MouseEvent, node:FileNode) {
+        console.log("onContextMenu: ", node);
+        dispatch({type:"context/set", payload: { element:e.target, job, node }});
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
     const renderTree = (node: FileNode) => {
-        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)}>
+        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)} onContextMenu={(e) => onContextMenu(e, node)}>
             {renderChildren(node)}
         </TreeItem>;
     };

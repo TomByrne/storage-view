@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import jobsReducer from './jobsSlice';
+import contextReducer from './contextSlice';
 
 export const store = configureStore({
   reducer: {
     jobs: jobsReducer,
+    context: contextReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

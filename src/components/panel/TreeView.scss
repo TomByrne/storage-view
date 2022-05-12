@@ -2,6 +2,11 @@
     word-break: break-word;
 
     .MuiTreeItem-label {
-        font-size: 0.95rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    .file-size {
+        opacity: 0.6;
+        font-size: 0.9em;
     }
 }
