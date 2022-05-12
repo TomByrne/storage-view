@@ -1,7 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, TextField } from "@mui/material";
 import { useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
-import { createJob } from '../../store/jobsSlice/jobsSlice';
+import { createJob } from '../../store/jobsSlice';
 import { dialog } from '@tauri-apps/api';
 import { Box } from "@mui/system";
 
@@ -38,6 +38,9 @@ export default function NewFilePathJobModal({
         if(handleClose) handleClose();
     }
 
+    function onTextChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setPath(e.target.value);
+    }
 
     return <Dialog
         open={open}
@@ -51,7 +54,7 @@ export default function NewFilePathJobModal({
             <DialogContentText id="dialog-description">
                 Select a file path to begin scanning.
             </DialogContentText>
-            <TextField sx={fieldStyle} value={path} multiline minRows={3} />
+            <TextField sx={fieldStyle} value={path} multiline minRows={3} onChange={onTextChange}/>
         </DialogContent>
         <DialogActions>
             <Button onClick={browse}><Box>Browse</Box></Button>
