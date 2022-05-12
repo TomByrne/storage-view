@@ -213,7 +213,7 @@ export const jobsSlice = createSlice({
             job.selectedPaths = paths;
 
             if(action.payload.expandTo) {
-                const expanded = job.expandedPaths;
+                const expanded:string[] = [];
                 for(const p of paths) {
                     let ind = job.path.length;
                     do {
@@ -221,6 +221,7 @@ export const jobsSlice = createSlice({
                         if(!expanded.includes(parentPath)) expanded.push(parentPath);
                     } while((ind = p.indexOf(path.sep, ind + 1)) !== -1)
                 }
+                job.expandedPaths = expanded;
             }
         },
         "set-expanded": (state, action) => {

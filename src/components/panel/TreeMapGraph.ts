@@ -97,7 +97,9 @@ export class TreeMapGraph {
         }
         // clear canvas
         if (this.root) {
-            //TODO: remove click listeners
+            for(const path in this.nodeMap) {
+                this.nodeMap[path].off("click");
+            }
             this.nodeMap = {};
             this.app.stage.removeChildren();
             squarify(this.root, this.app.renderer.width, this.app.renderer.height, (n, x, y, w, h) => this.commitSize(n, x, y, w, h));
