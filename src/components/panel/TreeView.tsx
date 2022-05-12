@@ -32,7 +32,7 @@ export default function TreeView({
     }
 
     function renderChildren(node: FileNode){
-        if(!node.children || node.children.length == 0) return null;
+        if(!node.children || node.children.length === 0) return null;
 
         // If not expanded, return a dummy child, for performance
         if(!job.expandedPaths.includes(node.path)) return dummyTreeItems;
