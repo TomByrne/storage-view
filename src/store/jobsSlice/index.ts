@@ -7,6 +7,7 @@ import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import lodash from "lodash";
 import { getTheme } from '../../utils/themes';
 import sortNodes from './sortNodes';
+import { path } from '@tauri-apps/api';
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -208,9 +209,19 @@ export const jobsSlice = createSlice({
                 return;
             }
 
-            console.log("set-selected: ", action.payload.paths);
+            const paths:string[] = action.payload.paths;
+            job.selectedPaths = paths;
 
-            job.selectedPaths = action.payload.paths;
+            if(action.payload.expandTo) {
+                const expanded = job.expandedPaths;
+                for(const p of paths) {
+                    let ind = job.path.length;
+                    do {
+                        const parentPath = p.substring(0, ind);
+                        if(!expanded.includes(parentPath)) expanded.push(parentPath);
+                    } while((ind = p.indexOf(path.sep, ind + 1)) !== -1)
+                }
+            }
         },
         "set-expanded": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);

@@ -30,7 +30,7 @@ function TreeMap({
             } else {
                 nodeIds = add ? [...job.selectedPaths, path] : [path];
             }
-            dispatch({ type: "jobs/set-selected", payload: { job: job.id, paths: nodeIds } });
+            dispatch({ type: "jobs/set-selected", payload: { job: job.id, paths: nodeIds, expandTo:true } });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch, job.selectedPaths]);
