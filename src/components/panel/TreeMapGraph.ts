@@ -1,4 +1,4 @@
-import { Application, Graphics, InteractionEvent, LINE_CAP, LINE_JOIN, Rectangle, Sprite, Texture } from 'pixi.js'
+import { Application, BLEND_MODES, Graphics, InteractionEvent, LINE_CAP, LINE_JOIN, Rectangle, Sprite, Texture } from 'pixi.js'
 import { FileNode, FileNodeTheme } from '../../store/jobsSlice/types';
 import squarify from '../../utils/squarify';
 import { defaultTheme } from '../../utils/themes';
@@ -60,6 +60,8 @@ export class TreeMapGraph {
         });
         this.app.stage.addChild(this.container);
         this.app.stage.addChild(this.outlines);
+
+        this.outlines.blendMode = BLEND_MODES.SCREEN;
     }
 
     get elem(): HTMLCanvasElement {
@@ -164,8 +166,8 @@ export class TreeMapGraph {
         const rect = this.rects[path];
         if(!rect) return;
         this.outlines.lineStyle({
-            color: 0xffffff,
-            width: 3,
+            color: 0x444444,
+            width: Math.min(10, rect.width / 2, rect.height / 2),
             alignment: 0,
             native: false,
             cap: LINE_CAP.SQUARE,
