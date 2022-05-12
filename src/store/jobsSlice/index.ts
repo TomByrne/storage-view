@@ -114,7 +114,7 @@ export const jobsSlice = createSlice({
                     name: name,
                     path,
                 },
-                expandedPaths: [],
+                expandedPaths: [path],
                 selectedPaths: [],
                 hoverPaths: [],
             }
