@@ -47,7 +47,8 @@ export class TreeMapGraph {
     outlines:Graphics = new Graphics();
     rects:Record<string, Rectangle> = {};
 
-    onClick: ((path:string, add:boolean) => void) | undefined;
+    onClick: ((node:FileNode, add:boolean) => void) | undefined;
+    onRightClick: ((node: FileNode, x:number, y:number) => void) | undefined;
 
     constructor() {
         this.app = new Application({
@@ -60,6 +61,11 @@ export class TreeMapGraph {
         });
         this.app.stage.addChild(this.container);
         this.app.stage.addChild(this.outlines);
+
+        this.app.view.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        })
 
         this.outlines.blendMode = BLEND_MODES.SCREEN;
     }
@@ -150,7 +156,15 @@ export class TreeMapGraph {
             this.checkHighlit(node.path, rect);
 
             rect.on("click", (e:InteractionEvent) => {
-                if(this.onClick) this.onClick(node.path, e.data.originalEvent.ctrlKey);
+                if(this.onClick) this.onClick(node, e.data.originalEvent.ctrlKey);
+            })
+
+            rect.on("rightclick", (e:InteractionEvent) => {
+                if(!this.onRightClick) return;
+                const bounds = this.app.view.getBoundingClientRect();
+                const x = e.data.global.x + bounds.left;
+                const y = e.data.global.y + bounds.top;
+                this.onRightClick(node, x, y);
             })
         } else if(this.highlit.includes(node.path)) {
             this.drawOutline(node.path);

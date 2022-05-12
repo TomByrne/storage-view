@@ -2,7 +2,7 @@ import { BugReport, ContentCopy, Launch } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { clipboard, shell } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
-import { useEffect } from "react";
+import { useEffect, createRef } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
@@ -14,6 +14,7 @@ platform().then((name) => {
 })
 
 export default function ContextMenu() {
+    const positionElem = createRef<HTMLDivElement>();
     const context = useSelector(selectContext);
     // const [pos, setPos] = useState({ x: 0, y: 0 });
     // const [show, setShow] = useState(false);
@@ -30,7 +31,7 @@ export default function ContextMenu() {
             return;
         }
         event.preventDefault();
-        dispatch({type:"context/set", payload: { element:event.target }});
+        dispatch({type:"context/set", payload: { element:event.target, x:event.pageX, y:event.pageY }});
         // setPos({ x: event.pageX, y: event.pageY });
         // setShow(true);
     }
@@ -124,13 +125,16 @@ export default function ContextMenu() {
     const items = renderItems();
 
 
-    return <Menu
-        anchorEl={context.element}
-        open={!!context.element && !!items.length}
-        onClose={handleClose}
-    >
-        <MenuList>
-            {items}
-        </MenuList>
-    </Menu>;
+    return <div>
+        <div id="context-pos" style={{position:'absolute', left:context.x + "px", top:context.y + "px", background:"#000"}} ref={positionElem}/>
+        <Menu
+            anchorEl={document.getElementById("context-pos")}
+            open={!!context.element && !!items.length}
+            onClose={handleClose}
+        >
+            <MenuList>
+                {items}
+            </MenuList>
+        </Menu>
+    </div>;
 }

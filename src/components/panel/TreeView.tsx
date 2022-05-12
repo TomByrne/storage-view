@@ -41,7 +41,7 @@ export default function TreeView({
 
     function onContextMenu(e:React.MouseEvent, node:FileNode) {
         console.log("onContextMenu: ", node);
-        dispatch({type:"context/set", payload: { element:e.target, job, node }});
+        dispatch({type:"context/set", payload: { element:e.target, job, node, x:e.pageX, y:e.pageY }});
         e.preventDefault();
         e.stopPropagation();
     }

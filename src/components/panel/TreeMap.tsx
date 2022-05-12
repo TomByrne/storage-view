@@ -1,6 +1,6 @@
 import './TreeMap.scss';
-import { JobInfo, JobState } from '../../store/jobsSlice/types';
-import { createRef, useEffect, useRef } from 'react';
+import { FileNode, JobInfo, JobState } from '../../store/jobsSlice/types';
+import React, { createRef, useEffect, useRef } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
 import { TreeMapGraph } from "./TreeMapGraph";
 import { useDispatch } from 'react-redux';
@@ -18,11 +18,13 @@ function TreeMap({
     const dimensions = useRefDimensions(treemapRef);
 
     let graph = useRef<TreeMapGraph>();
-    let onNodeClick = useRef<(path: string, add: boolean) => void>();
+    let onNodeClick = useRef<(node: FileNode, add: boolean) => void>();
+    let onNodeRightClick = useRef<(node: FileNode, x:number, y:number) => void>();
 
     useEffect(() => {
         if(!graph.current) return;
-        onNodeClick.current = (path: string, add: boolean) => {
+        onNodeClick.current = (node: FileNode, add: boolean) => {
+            const path = node.path;
             const isSelected = job.selectedPaths.includes(path);
             let nodeIds: string[];
             if (isSelected) {
@@ -32,12 +34,20 @@ function TreeMap({
             }
             dispatch({ type: "jobs/set-selected", payload: { job: job.id, paths: nodeIds, expandTo:true } });
         }
+        onNodeRightClick.current = (node: FileNode, x:number, y:number) => {
+            // Must delay, overwise the contextmenu event still makes it to the doc level
+            setTimeout(() => {
+                console.log("onNodeRightClick: ", node);
+                dispatch({ type: "context/set", payload: { element:graph.current?.elem , node, job, x, y  } });
+            }, 100);
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch, job.selectedPaths]);
 
     useEffect(() => {
         graph.current = new TreeMapGraph();
-        graph.current.onClick = (path: string, add: boolean) => (onNodeClick.current ? onNodeClick.current(path, add) : null);
+        graph.current.onClick = (node: FileNode, add: boolean) => (onNodeClick.current ? onNodeClick.current(node, add) : null);
+        graph.current.onRightClick = (node: FileNode, x:number, y:number) => (onNodeRightClick.current ? onNodeRightClick.current(node, x, y) : null);
 
         return () => graph.current?.destroy();
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -7,6 +7,8 @@ const initialState: ContextState = {
     element: undefined,
     job: undefined,
     node: undefined,
+    x: 0,
+    y: 0,
 }
 
 
@@ -19,11 +21,13 @@ export const contextSlice = createSlice({
             state.element = action.payload.element;
             state.job = action.payload.job;
             state.node = action.payload.node;
+            state.x = action.payload.x;
+            state.y = action.payload.y;
         },
         "clear": (state, action) => {
             state.element = undefined;
-            state.job = undefined;
-            state.node = undefined;
+            // state.job = undefined;
+            // state.node = undefined;
         },
     },
 });
