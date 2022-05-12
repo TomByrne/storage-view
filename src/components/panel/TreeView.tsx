@@ -7,6 +7,10 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import formatBytes from '../../utils/formatBytes';
 import { useDispatch } from 'react-redux';
 
+const dummyTreeItems = [
+    <TreeItem className="tree-node" key="dummy" nodeId="dummy" label="Loading..."/>
+];
+
 interface TreeViewProps {
     job: JobInfo;
     className: string;
@@ -27,12 +31,19 @@ export default function TreeView({
         else return `${node.name} (calculating...)`;
     }
 
+    function renderChildren(node: FileNode){
+        if(!node.children || node.children.length == 0) return null;
+
+        // If not expanded, return a dummy child, for performance
+        if(!job.expandedPaths.includes(node.path)) return dummyTreeItems;
+
+        return node.children.map((child) => renderTree(child));
+    }
+
     const renderTree = (node: FileNode) => {
         return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
-            {Array.isArray(node.children)
-                ? node.children.map((child) => renderTree(child))
-                : null}
-        </TreeItem>
+            {renderChildren(node)}
+        </TreeItem>;
     };
 
     const handleToggle = (_: React.SyntheticEvent, nodeIds: string[]) => {
