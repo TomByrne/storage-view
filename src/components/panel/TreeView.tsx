@@ -7,10 +7,6 @@ import { FileNode, JobInfo } from '../../store/jobsSlice/types';
 import formatBytes from '../../utils/formatBytes';
 import { useDispatch } from 'react-redux';
 
-
-const nodeStyle = {
-    wordBreak: 'break-word',
-}
 interface TreeViewProps {
     job: JobInfo;
     className: string;
@@ -32,7 +28,7 @@ export default function TreeView({
     }
 
     const renderTree = (node: FileNode) => {
-        return <TreeItem key={node.path} nodeId={node.path} sx={nodeStyle} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
+        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
             {Array.isArray(node.children)
                 ? node.children.map((child) => renderTree(child))
                 : null}
@@ -40,18 +36,12 @@ export default function TreeView({
     };
 
     const handleToggle = (_: React.SyntheticEvent, nodeIds: string[]) => {
-        // setExpanded(nodeIds);
         dispatch({ type:"jobs/set-expanded", payload:{ job:job.id, paths:nodeIds } });
     };
 
     const handleSelect = (_: React.SyntheticEvent, nodeIds: string[]) => {
-        // setSelected(nodeIds);
         dispatch({ type:"jobs/set-selected", payload:{ job:job.id, paths:nodeIds } });
     };
-
-    // useEffect(() => {
-    //     dispatch({ type:"jobs/set-selected", payload:{ job:job.id, selected } });
-    // }, [selected]);
 
     return (
         <div className={className}>
