@@ -193,15 +193,6 @@ export const jobsSlice = createSlice({
                 path: job.path,
             }
         },
-        "set-hover": (state, action) => {
-            const job = state.jobs.find(j => j.id === action.payload.job);
-            if (!job) {
-                console.warn(`Couldn't find job to set hover: ${action.payload.job}`);
-                return;
-            }
-
-            job.hoverPaths = action.payload.paths;
-        },
         "set-selected": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (!job) {

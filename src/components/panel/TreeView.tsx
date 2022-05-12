@@ -22,10 +22,6 @@ export default function TreeView({
 
     const dispatch = useDispatch();
 
-    function onMouseOver(node: FileNode) {
-        dispatch({ type:"jobs/set-hover", payload:{ job:job.id, paths:[node.path] } });
-    }
-
     function getLabel(node: FileNode): string {
         if (node.info) return `${node.name} (${formatBytes(node.info.size)})`;
         else return `${node.name} (calculating...)`;
@@ -41,7 +37,7 @@ export default function TreeView({
     }
 
     const renderTree = (node: FileNode) => {
-        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)} onMouseOver={() => onMouseOver(node)}>
+        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)}>
             {renderChildren(node)}
         </TreeItem>;
     };
