@@ -1,4 +1,4 @@
-import { Application, InteractionEvent, Sprite, Texture } from 'pixi.js'
+import { Application, Graphics, InteractionEvent, LINE_CAP, LINE_JOIN, Rectangle, Sprite, Texture } from 'pixi.js'
 import { FileNode, FileNodeTheme } from '../../store/jobsSlice/types';
 import squarify from '../../utils/squarify';
 import { defaultTheme } from '../../utils/themes';
@@ -42,6 +42,11 @@ export class TreeMapGraph {
     nodeMap: Record<string, Sprite> = {};
     highlit: string[] = [];
 
+
+    container:Sprite = new Sprite();
+    outlines:Graphics = new Graphics();
+    rects:Record<string, Rectangle> = {};
+
     onClick: ((path:string, add:boolean) => void) | undefined;
 
     constructor() {
@@ -53,6 +58,8 @@ export class TreeMapGraph {
             height: 480,
             // clearBeforeRender: false,
         });
+        this.app.stage.addChild(this.container);
+        this.app.stage.addChild(this.outlines);
     }
 
     get elem(): HTMLCanvasElement {
@@ -80,6 +87,11 @@ export class TreeMapGraph {
         for(const id in this.nodeMap) {
             this.checkHighlit(id, this.nodeMap[id]);
         }
+
+        this.outlines.clear();
+        for(const path of paths) {
+            if(!this.nodeMap[path]) this.drawOutline(path);
+        }
     }
 
     drawSoon() {
@@ -100,8 +112,10 @@ export class TreeMapGraph {
             for(const path in this.nodeMap) {
                 this.nodeMap[path].off("click");
             }
+            this.rects = {};
             this.nodeMap = {};
-            this.app.stage.removeChildren();
+            this.container.removeChildren();
+            this.outlines.clear();
             squarify(this.root, this.app.renderer.width, this.app.renderer.height, (n, x, y, w, h) => this.commitSize(n, x, y, w, h));
         }
     }
@@ -117,6 +131,8 @@ export class TreeMapGraph {
     }
 
     commitSize(node: FileNode, x: number, y: number, w: number, h: number): boolean {
+        this.rects[node.path] = new Rectangle(x, y, w, h);
+
         const too_small = Math.sqrt(w * w + h * h) < smallest_area;
         if (node.info?.is_dir === false || too_small) {
             console.log("commitSize: ", x, y, w, h, node);
@@ -126,7 +142,7 @@ export class TreeMapGraph {
             rect.width = w;
             rect.height = h;
             rect.interactive = true;
-            this.app.stage.addChild(rect);
+            this.container.addChild(rect);
 
             this.nodeMap[node.path] = rect;
             this.checkHighlit(node.path, rect);
@@ -134,12 +150,29 @@ export class TreeMapGraph {
             rect.on("click", (e:InteractionEvent) => {
                 if(this.onClick) this.onClick(node.path, e.data.originalEvent.ctrlKey);
             })
+        } else if(this.highlit.includes(node.path)) {
+            this.drawOutline(node.path);
         }
         return !too_small;
     }
 
     checkHighlit(path: string, node: Sprite) {
         node.alpha = this.highlit.includes(path) ? 1 : 0.5;
+    }
+
+    drawOutline(path: string) {
+        const rect = this.rects[path];
+        if(!rect) return;
+        this.outlines.lineStyle({
+            color: 0xffffff,
+            width: 3,
+            alignment: 0,
+            native: false,
+            cap: LINE_CAP.SQUARE,
+            join: LINE_JOIN.MITER,
+            miterLimit: 10,
+        });
+        this.outlines.drawRect(rect.x, rect.y, rect.width, rect.height);
     }
 
     destroy() {
