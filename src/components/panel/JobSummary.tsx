@@ -1,5 +1,5 @@
 import './JobSummary.scss';
-import { restartJob } from '../../store/jobsSlice/jobsSlice';
+import { restartJob } from '../../store/jobsSlice';
 import { IconButton, Paper } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
 import { useAppDispatch } from '../../store/hooks';

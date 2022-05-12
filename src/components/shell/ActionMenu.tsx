@@ -1,6 +1,6 @@
 import { IconButton, Tab, Tabs } from "@mui/material";
 import { useAppDispatch } from "../../store/hooks";
-import { createJob, selectCurrent, selectJobs } from '../../store/jobsSlice/jobsSlice';
+import { createJob, selectCurrent, selectJobs } from '../../store/jobsSlice';
 import { dialog } from '@tauri-apps/api';
 import { Add, Close } from "@mui/icons-material";
 import { useCallback } from "react";

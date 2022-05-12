@@ -45,6 +45,9 @@ export interface JobInfo extends JobBrief {
     name: string,
     state: JobState,
     percent: number, // estimate of job progress, as fract
+    expandedPaths: string[],
+    selectedPaths: string[],
+    hoverPaths: string[],
 }
 
 export enum JobState {

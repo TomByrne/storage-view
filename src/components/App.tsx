@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { selectJob, selectHasJobs } from "../store/jobsSlice/jobsSlice";
+import { selectJob, selectHasJobs } from "../store/jobsSlice";
 import NewFilePathJobModal from "./modal/NewFilePathJobModal";
 import ActionMenu from "./shell/ActionMenu";
 import JobTab from './JobTab';

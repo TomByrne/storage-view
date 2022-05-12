@@ -6,6 +6,7 @@ import { startJob, endJob, getNode, path_regex } from './getNode';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import lodash from "lodash";
 import { getTheme } from '../../utils/themes';
+import sortNodes from './sortNodes';
 
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -112,6 +113,9 @@ export const jobsSlice = createSlice({
                     name: name,
                     path,
                 },
+                expandedPaths: [],
+                selectedPaths: [],
+                hoverPaths: [],
             }
             state.jobs.push(job);
             console.log("Created new job: ", job);
@@ -141,14 +145,6 @@ export const jobsSlice = createSlice({
             }
 
         },
-        // "set-aspect-ratio": (state, action) => {
-        //     const job = state.jobs.find(j => j.id === action.payload.job);
-        //     if (!job) {
-        //         console.warn(`Ignoring update for expired job: ${action.payload.job}`, action.payload);
-        //         return
-        //     }
-        //     job.aspectRatio = action.payload.aspectRatio;
-        // },
         "set-state": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (job) job.state = action.payload.state;
@@ -161,6 +157,7 @@ export const jobsSlice = createSlice({
                 return
             }
             const root = action.payload.root;
+            sortNodes(root);
             if(root) {
                 job.root = root;
             }
@@ -194,6 +191,35 @@ export const jobsSlice = createSlice({
                 name: "",
                 path: job.path,
             }
+        },
+        "set-hover": (state, action) => {
+            const job = state.jobs.find(j => j.id === action.payload.job);
+            if (!job) {
+                console.warn(`Couldn't find job to set hover: ${action.payload.job}`);
+                return;
+            }
+
+            job.hoverPaths = action.payload.paths;
+        },
+        "set-selected": (state, action) => {
+            const job = state.jobs.find(j => j.id === action.payload.job);
+            if (!job) {
+                console.warn(`Couldn't find job to set selected: ${action.payload.job}`);
+                return;
+            }
+
+            console.log("set-selected: ", action.payload.paths);
+
+            job.selectedPaths = action.payload.paths;
+        },
+        "set-expanded": (state, action) => {
+            const job = state.jobs.find(j => j.id === action.payload.job);
+            if (!job) {
+                console.warn(`Couldn't find job to set expanded: ${action.payload.job}`);
+                return;
+            }
+
+            job.expandedPaths = action.payload.paths;
         },
     },
 });
