@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { selectJob, selectHasJobs } from "../store/jobsSlice";
 import NewFilePathJobModal from "./modal/NewFilePathJobModal";
-import ActionMenu from "./shell/ActionMenu";
+import JobTabs from "./shell/JobTabs";
 import JobTab from './JobTab';
 import { Box } from "@mui/material";
 import React from "react";
@@ -23,7 +23,7 @@ export default function App() {
         <ContextMenu/>
         <NewFilePathJobModal open={!hasJobs} />
         <Box sx={stackStyle}>
-            <ActionMenu />
+            <JobTabs />
             <JobTab job={currentJob} />
         </Box>
     </React.Fragment>;
