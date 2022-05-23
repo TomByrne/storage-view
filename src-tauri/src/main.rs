@@ -16,8 +16,25 @@ const SEND_FILE_COUNT: usize = 100;
 fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![create_job])
+    .invoke_handler(tauri::generate_handler![show_devtools])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
+}
+
+#[tauri::command]
+fn show_devtools(handle: AppHandle, shown: bool) -> Result<(), String> {
+  println!("show_devtools: {}", shown);
+  let windows = handle.windows();
+  for (_, value) in windows {
+    if shown {
+      value.open_devtools();
+    } else {
+      value.close_devtools();
+    }
+    return Ok(());
+  }
+
+  return Err("No window found".to_string());
 }
 
 #[tauri::command]
