@@ -1,8 +1,25 @@
-# Getting Started with Create React App
+# Storage View
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a React/Tauri front-end to the [fstat](https://github.com/TomByrne/fstat-rs) Rust project.
+It is heavily inspired by the [WinDirStat](https://windirstat.net/) project, but really serves as a way to explore several new technologies.
 
-## Available Scripts
+## Tech
+
+- **[Rust](https://www.rust-lang.org/):** Application backend and fstat file recursion.
+- **[Tauri](https://tauri.studio/):** Application wrapper (windowing, etc)
+- **[React](https://reactjs.org/):** Front-end component lib
+- **[Redux](https://redux.js.org/):** Front-end state management
+- **[MUI](https://mui.com/):** Front-end UI lib
+- **[PixiJS](https://pixijs.com/):** WebGL Graphics lib (for drawing Treemap)
+
+## Setup
+- Install [rustup](https://rustup.rs/) (will require [VS C++ Build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) on Windows)
+- Install [Node](https://nodejs.org/en/download/)
+- Install global yarn: `npm install yarn -g`
+- Install JS dependencies within project: `yarn`
+
+
+## Development
 
 In the project directory, you can run:
 
@@ -28,19 +45,3 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
