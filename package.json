@@ -11,6 +11,7 @@
     "@mui/material": "^5.6.4",
     "@reduxjs/toolkit": "^1.8.1",
     "@tauri-apps/api": "^1.0.0-rc.3",
+    "@tauri-apps/tauricon": "^1.0.2",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -20,8 +21,8 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-redux": "^7.1.24",
-    "pixi.js": "^6.3.2",
     "lodash": "^4.17.21",
+    "pixi.js": "^6.3.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-redux": "^8.0.1",
@@ -31,12 +32,14 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
+    "postinstall": "yarn gen-icons",
     "start": "yarn tauri dev",
     "react:start": "cross-env BROWSER=none react-scripts start",
     "react:build": "react-scripts build",
     "react:test": "react-scripts test",
     "react:eject": "react-scripts eject",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "gen-icons": "npx @tauri-apps/tauricon .\\public\\icon.svg"
   },
   "eslintConfig": {
     "extends": [
