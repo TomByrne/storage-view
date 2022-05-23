@@ -1,4 +1,4 @@
-# Storage View
+# ![](./public/icon.svg) Storage View
 
 This is a React/Tauri front-end to the [fstat](https://github.com/TomByrne/fstat-rs) Rust project.
 It is heavily inspired by the [WinDirStat](https://windirstat.net/) project, but really serves as a way to explore several new technologies.
