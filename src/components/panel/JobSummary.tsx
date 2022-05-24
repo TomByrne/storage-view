@@ -1,5 +1,5 @@
 import './JobSummary.scss';
-import { restartJob } from '../../store/jobsSlice';
+import { refresh } from '../../store/jobsSlice';
 import { IconButton, Paper } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
 import { useAppDispatch } from '../../store/hooks';
@@ -18,7 +18,7 @@ export default function TreeView({
     const dispatch = useAppDispatch();
 
     function rerun(){
-        dispatch(restartJob(job.id));
+        dispatch(refresh(job.id));
     }
 
     return (
