@@ -33,7 +33,7 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
         const parent_name = match[2];
         const parent = getNode(job, parent_name, parent_path, update);
 
-        node.parent = parent;
+        // node.parent = parent;
 
         if (!parent.map) parent.map = {};
         else parent.map = { ...parent.map };
