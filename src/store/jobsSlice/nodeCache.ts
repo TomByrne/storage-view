@@ -4,7 +4,7 @@ import { FileNode } from "./types";
 const FILENODE_CACHE: Record<number, Record<string, FileNode>> = {};
 
 export function create(id:number) {
-    if(!FILENODE_CACHE[id]) FILENODE_CACHE[id] = {};
+    /*if(!FILENODE_CACHE[id])*/ FILENODE_CACHE[id] = {};
 }
 
 export function clear(id:number) {

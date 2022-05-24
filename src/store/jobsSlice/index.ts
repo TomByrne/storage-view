@@ -3,7 +3,7 @@ import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 import { getNode, path_regex } from './getNode';
-import { create, clear, get, remove } from './nodeCache';
+import { create, clear, get, remove, set } from './nodeCache';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import { getTheme } from '../../utils/themes';
 import sortNodes from './sortNodes';
@@ -36,6 +36,8 @@ const runJobAsync = createAsyncThunk(
         });
 
         create(job);
+        set(job, jobCopy.path, jobCopy.root);
+        
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
             if (prog.job !== fstatId) return;
@@ -52,7 +54,7 @@ const runJobAsync = createAsyncThunk(
                 dispatch({
                     type: "jobs/finish",
                     payload: {
-                        job: prog.job,
+                        job,
                         root: jobCopy.root,
                     },
                 });
