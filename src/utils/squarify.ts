@@ -13,27 +13,33 @@ export default function squarify(node: FileNode, width:number, height:number, co
     }
 }
 
+// Amount of time allowed to execute per 'frame'
+const TIME_CUTOFF = 30;//ms
+
 function executeStack(stack:AsyncFunc[]) {
     if(stack.length === 0) {
         console.log("done");
         return;
     }
-    // setTimeout(() => {
+    setTimeout(() => {
         const proms = [];
 
         let i=0;
-        while(i<500 && stack.length) {
+        let start = performance.now();
+        while(stack.length) {
             i++;
             const func = stack.shift();
             if(!func) throw new Error("Something wrong in stack");
             proms.push(func());
+
+            if(performance.now() - start > TIME_CUTOFF) break;
         }
         
         Promise.all(proms)
         .then(() => {
             executeStack(stack);
         })
-    // }, 0);
+    }, 0);
 }
 
 async function squarify_recurse(node: FileNode, x:number, y:number, w: number, h: number, total:number, commit:CommitCallback, stack:AsyncFunc[]): Promise<void> {
