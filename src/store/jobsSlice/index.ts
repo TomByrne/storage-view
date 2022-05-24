@@ -2,7 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
-import { startJob, endJob, getNode, path_regex } from './getNode';
+import { getNode, path_regex } from './getNode';
+import { create, clear } from './nodeCache';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import lodash from "lodash";
 import { getTheme } from '../../utils/themes';
@@ -35,7 +36,7 @@ const runJobAsync = createAsyncThunk(
         // Create a temporary copy of the job to store progress in
         // const tempJob = current(job);
 
-        startJob(id);
+        create(id);
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
             console.log("create_job/prog: ", prog.job, prog.done, prog.files.length, prog.files);
@@ -61,7 +62,7 @@ const runJobAsync = createAsyncThunk(
         await invoke<string>('create_job', { id: job.id, path: job.path }); // Call out to rust
         foundJob = findJob(getState() as RootState, id);
         if (foundJob && foundJob.state !== JobState.done) {
-            endJob(id);
+            clear(id);
             await dispatch({
                 type: "jobs/set-state",
                 payload: {
@@ -80,7 +81,7 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     let node: FileNode = getNode(job, file.name, file.path, false);
     node.info = file;
     node.name = file.name;
-    node.value = file.size;
+    node.size = file.size;
     node.child_count = file.child_count;
     node.theme = getTheme(node);
 }
@@ -106,11 +107,12 @@ export const jobsSlice = createSlice({
             const job = {
                 id,
                 path,
-                state: JobState.idle,
+                state: JobState.invalid,
                 aspectRatio: 1,
                 percent: 0,
                 name: name,
                 root: {
+                    parent: undefined,
                     name: name,
                     path,
                 },
@@ -184,11 +186,12 @@ export const jobsSlice = createSlice({
                 console.warn(`Can't restart running job: ${action.payload.job}`);
                 return;
             }
-            job.state = JobState.idle;
+            job.state = JobState.invalid;
             job.percent = 0;
 
             //TODO: see if we can skip this
             job.root = {
+                parent: undefined,
                 name: "",
                 path: job.path,
             }
