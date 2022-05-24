@@ -1,19 +1,14 @@
 export interface FileNode {
+    parent: FileNode | undefined,
+
     info?: JobFileInfo,
     theme?: FileNodeTheme,
     map?: Record<string, FileNode>,
     children?: FileNode[],
     name: string,
     path: string,
-    value?: number,
+    size?: number,
     child_count?: number,
-    // className?: string,
-
-    // Fractions
-    // pos_x: number;
-    // pos_y: number;
-    // pos_w: number;
-    // pos_h: number;
 }
 export interface JobFileInfo {
     path: string,
@@ -50,7 +45,7 @@ export interface JobInfo extends JobBrief {
 }
 
 export enum JobState {
-    idle = "idle",
+    invalid = "invalid",
     doing = "doing",
     done = "done",
     failed = "failed",

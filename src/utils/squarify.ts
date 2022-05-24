@@ -7,7 +7,7 @@ export type CommitCallback = (node:FileNode, x:number, y:number, w:number, h:num
 export default function squarify(node: FileNode, width:number, height:number, commit:CommitCallback) {
     if(commit(node, 0, 0, width, height)) {
         const stack:AsyncFunc[] = [];
-        stack.push(() => squarify_recurse(node, 0, 0, width, height, node.value || 0, commit, stack));
+        stack.push(() => squarify_recurse(node, 0, 0, width, height, node.size || 0, commit, stack));
         
         executeStack(stack);
     }
@@ -67,7 +67,7 @@ async function squarify_recurse(node: FileNode, x:number, y:number, w: number, h
             //     i++;
             //     continue; // Skip items with no value! (might want to give them a minimum at some point)
             // }
-            let child_area = child.value || 0;
+            let child_area = child.size || 0;
             let child_area_norm = ((child_area) / total) * (active_w * active_h);
 
             // Need to convert from size total units to view units
@@ -113,7 +113,7 @@ async function squarify_recurse(node: FileNode, x:number, y:number, w: number, h
 function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: boolean, x: number, y: number, w: number, h: number, row_size:number, total:number, commit:CommitCallback, stack:AsyncFunc[]) {
     for (let i = start; i < end; i++) {
         const child = nodes[i];
-        const value = (child.value || 0) / total;
+        const value = (child.size || 0) / total;
 
 
         let childW = w;
@@ -130,7 +130,7 @@ function finaliseRow(nodes: FileNode[], start: number, end: number, is_row: bool
         let childY = y;
 
         if(commit(child, x, y, childW, childH)) stack.push(async () => {
-            return squarify_recurse(child, childX, childY, childW, childH, child.value || 0, commit, stack);
+            return squarify_recurse(child, childX, childY, childW, childH, child.size || 0, commit, stack);
         });
 
         if (is_row) {
