@@ -18,7 +18,7 @@ const TIME_CUTOFF = 30;//ms
 
 function executeStack(stack:AsyncFunc[]) {
     if(stack.length === 0) {
-        console.log("done");
+        console.log("squarify done");
         return;
     }
     setTimeout(() => {

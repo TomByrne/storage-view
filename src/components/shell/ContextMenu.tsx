@@ -1,10 +1,12 @@
-import { BugReport, ContentCopy, Launch, Delete } from "@mui/icons-material";
+import { BugReport, ContentCopy, Launch, Cached, AddCircle } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { clipboard, shell } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
 import { useEffect, createRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
+import { useAppDispatch } from "../../store/hooks";
+import { createJob, refresh } from "../../store/jobsSlice";
 import { FileNode, JobInfo } from "../../store/jobsSlice/types";
 
 let explorerName = "Explorer";
@@ -17,7 +19,7 @@ export default function ContextMenu() {
     const context = useSelector(selectContext);
     // const [pos, setPos] = useState({ x: 0, y: 0 });
     // const [show, setShow] = useState(false);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     function handleClose() {
         dispatch({ type: "context/clear" });
@@ -51,12 +53,22 @@ export default function ContextMenu() {
         shell.open(path, openWith);
     }
 
-    function deleteFile(node: FileNode, check = true) {
-        const msg = "Are you sure you want to delete the " + (node.info?.is_dir ? "folder" : "file") + "\n" + node.name;
-        if (!check || window.confirm(msg)) {
-            console.log("YEsh");
-        }
+    function refreshFile(job: JobInfo, node: FileNode) {
+        handleClose();
+        dispatch(refresh(job.id, node.path));
     }
+
+    function createNewTab(node: FileNode) {
+        handleClose();
+        dispatch(createJob(node.path));
+    }
+
+    // function deleteFile(node: FileNode, check = true) {
+    //     const msg = "Are you sure you want to delete the " + (node.info?.is_dir ? "folder" : "file") + "\n" + node.name;
+    //     if (!check || window.confirm(msg)) {
+    //         console.log("YEsh");
+    //     }
+    // }
 
     function renderJobItems(job: JobInfo) {
         //TODO: Add progress, etc
@@ -66,18 +78,32 @@ export default function ContextMenu() {
             // </MenuItem>
         ];
     }
-    function renderNodeItems(node: FileNode) {
+    function renderNodeItems(job:JobInfo, node: FileNode) {
         return [
             <MenuItem key="node-title" disabled>
                 <ListItemText>{node.name}</ListItemText>
             </MenuItem>,
 
-            <MenuItem key="node-delete" onClick={() => deleteFile(node)}>
+            <MenuItem key="node-refresh" onClick={() => refreshFile(job, node)}>
                 <ListItemIcon>
-                    <Delete fontSize="small" />
+                    <Cached fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
+                <ListItemText>Refresh {node.info?.is_dir ? "folder" : "file"}</ListItemText>
             </MenuItem>,
+
+            <MenuItem key="node-new-tab" onClick={() => createNewTab(node)}>
+                <ListItemIcon>
+                    <AddCircle fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Scan in new tab</ListItemText>
+            </MenuItem>,
+
+            // <MenuItem key="node-delete" onClick={() => deleteFile(node)}>
+            //     <ListItemIcon>
+            //         <Delete fontSize="small" />
+            //     </ListItemIcon>
+            //     <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
+            // </MenuItem>,
 
             <MenuItem key="node-open" onClick={() => openFile(node.path, "open")}>
                 <ListItemIcon>
@@ -123,13 +149,14 @@ export default function ContextMenu() {
         let ret: JSX.Element[] = [];
         if (context.job) {
             ret = ret.concat(renderJobItems(context.job));
-        }
-        if (context.node) {
-            if (ret.length) ret.push(<Divider key="divider-1" />);
-            ret = ret.concat(renderNodeItems(context.node));
+            
+            if (context.node) {
+                if (ret.length) ret.push(<Divider key="divider-1" />);
+                ret = ret.concat(renderNodeItems(context.job, context.node));
+            }
         }
         if (process.env.NODE_ENV === "development") {
-            if (ret.length) ret.push(<Divider key="divider-1" />);
+            if (ret.length) ret.push(<Divider key="divider-2" />);
             ret = ret.concat(devItems());
         }
         return ret;

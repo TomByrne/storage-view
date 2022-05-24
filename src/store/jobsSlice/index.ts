@@ -3,7 +3,6 @@ import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 import { getNode, path_regex } from './getNode';
-// import { create, clear, get, remove, set } from './nodeCache';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import { getTheme } from '../../utils/themes';
 import sortNodes from './sortNodes';
@@ -19,7 +18,7 @@ let lastId = 0;
 // typically used to make async requests.
 const runJobAsync = createAsyncThunk(
     'jobs/run',
-    async ({ job, path, root }: { job: number, path: string, root: FileNode }, { dispatch, getState }) => {
+    async ({ job, path }: { job: number, path: string }, { dispatch, getState }) => {
         let foundJob = findJob(getState() as RootState, job);
         if (!foundJob) {
             throw new Error("Job not found: " + job);
@@ -35,8 +34,19 @@ const runJobAsync = createAsyncThunk(
             },
         });
 
-        // create(job);
-        // set(job, jobCopy.path, jobCopy.root);
+        const root = jobCopy.nodeMap[path];
+        if(path === jobCopy.path) {
+            // root
+            clearNode(jobCopy, root);
+        } else {
+            // not root, must fully remove in case path has been deleted
+            clearNode(jobCopy, root, true);
+            const parent = getParent(jobCopy, path);
+            if(parent && parent.children) {
+                parent.child_count = parent.child_count ? parent.child_count - 1 : 0;
+                parent.children = parent.children.filter((c) => c.path !== path);
+            }
+        }
         
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
@@ -62,7 +72,23 @@ const runJobAsync = createAsyncThunk(
             }
         })
         console.log("Begin job");
-        await invoke<string>('create_job', { id: fstatId, path }); // Call out to rust
+        try {
+            await invoke<string>('create_job', { id: fstatId, path }); // Call out to rust
+        } catch(e) {
+            if(e === "Path not found") {
+                calcSize(jobCopy, root, true);
+                dispatch({
+                    type: "jobs/finish",
+                    payload: {
+                        job,
+                        jobCopy,
+                    },
+                });
+            } else {
+                console.error(e);
+            }
+            unlisten();
+        }
         foundJob = findJob(getState() as RootState, job);
         if (foundJob && foundJob.state !== JobState.done) {
             await dispatch({
@@ -97,18 +123,18 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     }
 }
 
-function clearNode(job: JobInfo, node: FileNode) {
+function clearNode(job: JobInfo, node: FileNode, clearMap?: boolean) {
     node.info = undefined;
     node.size = 0;
     node.child_count = 0;
     if (node.children) {
         for (const child of node.children) {
-            clearNode(job, child);
-            delete job.nodeMap[child.path];
+            clearNode(job, child, true);
         }
         node.children = [];
         node.map = {};
     }
+    if(clearMap) delete job.nodeMap[node.path];
 }
 
 function calcPercent(node: FileNode): number {
@@ -214,38 +240,29 @@ export const jobsSlice = createSlice({
             if (state.current >= index) state.current--;
             state.jobs.splice(index, 1);
         },
-        "reset": (state, action) => {
-            const id = action.payload.job;
-            const job = state.jobs.find(j => j.id === id);
-            if (!job) {
-                console.warn(`Couldn't find job to restart: ${id}`);
-                return;
-            }
-            if (job.state === JobState.doing) {
-                console.warn(`Can't restart running job: ${id}`);
-                return;
-            }
-            job.state = JobState.invalid;
+        // "reset": (state, action) => {
+        //     const id = action.payload.id;
+        //     const job = state.jobs.find(j => j.id === id);
+        //     if (!job) {
+        //         console.warn(`Couldn't find job to reset: ${id}`);
+        //         return;
+        //     }
+        //     if (job.state === JobState.doing) {
+        //         console.warn(`Can't restart running job: ${id}`);
+        //         return;
+        //     }
+        //     job.state = JobState.invalid;
 
-            const root = action.payload.root || job.root;
+        //     const root = action.payload.root || job.root;
 
-            clearNode(id, root);
+        //     clearNode(id, root);
 
-            if (job.root !== root) {
-                job.percent = calcPercent(job.root);
-            } else {
-                job.percent = 0;
-            }
-
-            // clear(action.payload.job);
-
-            // //TODO: see if we can skip this
-            // job.root = {
-            //     parent: undefined,
-            //     name: "",
-            //     path: job.path,
-            // }
-        },
+        //     if (job.root !== root) {
+        //         job.percent = calcPercent(job.root);
+        //     } else {
+        //         job.percent = 0;
+        //     }
+        // },
         "set-selected": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (!job) {
@@ -304,7 +321,7 @@ export const createJob = (path: string): AppThunk => (
         payload: { path, setCurrent: true },
     });
     const job = selectJob(getState());
-    if (job) dispatch(runJobAsync({ job: job.id, path: job.path, root: job.root }));
+    if (job) dispatch(runJobAsync({ job: job.id, path: job.path }));
 };
 
 // export const restartJob = (id: number): AppThunk => (
@@ -333,11 +350,11 @@ export const refresh = (id: number, path?: string): AppThunk => (
             console.error("Failed to find node in cache: ", id, path);
             return;
         }
-        dispatch({
-            type: "jobs/reset",
-            payload: { id, root },
-        });
-        dispatch(runJobAsync({ job: job.id, path, root }));
+        // dispatch({
+        //     type: "jobs/reset",
+        //     payload: { id, root },
+        // });
+        dispatch(runJobAsync({ job: job.id, path }));
     } else {
         console.error("Failed to find job with id: ", id);
     }

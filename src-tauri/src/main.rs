@@ -36,7 +36,8 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   println!("Creating job: {}", path);
 
   if !Path::new(&path).exists() {
-    return Err(format!("Path not found: {}", path));
+    println!("Path not found: {}", path);
+    return Err(format!("Path not found"));
   }
 
   let opts = FStatOptions {
