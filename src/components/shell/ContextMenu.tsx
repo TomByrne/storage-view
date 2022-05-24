@@ -3,9 +3,7 @@ import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@
 import { clipboard, shell } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
 import { useEffect, createRef } from "react";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { selectDevtoolsShown } from "../../store/devSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
 import { FileNode, JobInfo } from "../../store/jobsSlice/types";
 
@@ -17,7 +15,6 @@ platform().then((name) => {
 export default function ContextMenu() {
     const positionElem = createRef<HTMLDivElement>();
     const context = useSelector(selectContext);
-    const devtoolsShown = useSelector(selectDevtoolsShown);
     // const [pos, setPos] = useState({ x: 0, y: 0 });
     // const [show, setShow] = useState(false);
     const dispatch = useDispatch();
