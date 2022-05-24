@@ -24,10 +24,8 @@ function executeStack(stack:AsyncFunc[]) {
     setTimeout(() => {
         const proms = [];
 
-        let i=0;
         let start = performance.now();
         while(stack.length) {
-            i++;
             const func = stack.shift();
             if(!func) throw new Error("Something wrong in stack");
             proms.push(func());

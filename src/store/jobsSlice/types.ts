@@ -1,5 +1,5 @@
 export interface FileNode {
-    parent: FileNode | undefined,
+    // parent: FileNode | undefined,
 
     info?: JobFileInfo,
     theme?: FileNodeTheme,
@@ -42,6 +42,7 @@ export interface JobInfo extends JobBrief {
     percent: number, // estimate of job progress, as fract
     expandedPaths: string[],
     selectedPaths: string[],
+    nodeMap: Record<string, FileNode>,
 }
 
 export enum JobState {

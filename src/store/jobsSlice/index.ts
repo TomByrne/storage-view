@@ -3,7 +3,7 @@ import { RootState, AppThunk } from '../store';
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event';
 import { getNode, path_regex } from './getNode';
-import { create, clear, get, remove, set } from './nodeCache';
+// import { create, clear, get, remove, set } from './nodeCache';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import { getTheme } from '../../utils/themes';
 import sortNodes from './sortNodes';
@@ -35,8 +35,8 @@ const runJobAsync = createAsyncThunk(
             },
         });
 
-        create(job);
-        set(job, jobCopy.path, jobCopy.root);
+        // create(job);
+        // set(job, jobCopy.path, jobCopy.root);
         
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
@@ -55,7 +55,7 @@ const runJobAsync = createAsyncThunk(
                     type: "jobs/finish",
                     payload: {
                         job,
-                        root: jobCopy.root,
+                        jobCopy,
                     },
                 });
                 unlisten();
@@ -77,6 +77,13 @@ const runJobAsync = createAsyncThunk(
     }
 );
 
+function getParent(job: JobInfo, path: string): FileNode | undefined {
+    const match = path.match(path_regex);
+    if(!match) return undefined;
+    const parent_path = match[1];
+    return job.nodeMap[parent_path];
+}
+
 function updateJobFile(job: JobInfo, file: JobFileInfo) {
     let node: FileNode = getNode(job, file.name, file.path, false);
     node.info = file;
@@ -84,19 +91,20 @@ function updateJobFile(job: JobInfo, file: JobFileInfo) {
     node.size = file.size;
     node.child_count = file.child_count;
     node.theme = getTheme(node);
-    if (node.size && node.parent) {
-        calcSize(node.parent, true);
+    const parent = getParent(job, node.path);
+    if (node.size && parent) {
+        calcSize(job, parent, true);
     }
 }
 
-function clearNode(job: number, node: FileNode) {
+function clearNode(job: JobInfo, node: FileNode) {
     node.info = undefined;
     node.size = 0;
     node.child_count = 0;
     if (node.children) {
         for (const child of node.children) {
             clearNode(job, child);
-            remove(job, child.path);
+            delete job.nodeMap[child.path];
         }
         node.children = [];
         node.map = {};
@@ -113,14 +121,15 @@ function calcPercent(node: FileNode): number {
     }, 0) / count;
 }
 
-function calcSize(node: FileNode, recurse: boolean) {
+function calcSize(job: JobInfo, node: FileNode, recurse: boolean) {
     node.size = 0;
     if (node.children) {
         for (const child of node.children) {
             node.size += child.size || 0;
         }
     }
-    if (recurse && node.parent) calcSize(node.parent, recurse);
+    const parent = getParent(job, node.path);
+    if (recurse && parent) calcSize(job, parent, recurse);
 }
 
 const initialState: JobsState = {
@@ -141,6 +150,11 @@ export const jobsSlice = createSlice({
             const path = action.payload.path;
             const match = path.match(path_regex);
             const name = (match ? match[3] || path : path);
+            const root = {
+                parent: undefined,
+                name: name,
+                path,
+            };
             const job = {
                 id,
                 path,
@@ -148,14 +162,11 @@ export const jobsSlice = createSlice({
                 aspectRatio: 1,
                 percent: 0,
                 name: name,
-                root: {
-                    parent: undefined,
-                    name: name,
-                    path,
-                },
+                root,
                 expandedPaths: [path],
                 selectedPaths: [],
                 hoverPaths: [],
+                nodeMap: {[path]:root},
             }
             state.jobs.push(job);
             console.log("Created new job: ", job);
@@ -187,17 +198,15 @@ export const jobsSlice = createSlice({
                 console.warn(`Couldn't find job to finish: ${action.payload.job}`);
                 return
             }
-            const root = action.payload.root;
-            sortNodes(root);
-            if (root) {
-                job.root = root;
-            }
+            const jobCopy = action.payload.jobCopy;
+            sortNodes(jobCopy.root);
+            job.root = jobCopy.root;
+            job.nodeMap = jobCopy.nodeMap;
             job.state = JobState.done;
             console.log("Job finished: ", job);
         },
         "remove": (state, action) => {
             const index = state.jobs.findIndex(j => j.id === action.payload.job);
-            clear(action.payload.job);
             if (index === -1) {
                 console.warn(`Couldn't find job to remove: ${action.payload.job}`);
                 return
@@ -319,7 +328,7 @@ export const refresh = (id: number, path?: string): AppThunk => (
     const job = findJob(getState(), id);
     if (job) {
         if (!path) path = job.path;
-        const root = get(id, path);
+        const root = job.nodeMap[path];
         if (!root) {
             console.error("Failed to find node in cache: ", id, path);
             return;

@@ -1,11 +1,12 @@
-import { get, set } from "./nodeCache";
+// import { get, set } from "./nodeCache";
 import { FileNode, JobInfo } from "./types";
 
 export const path_regex = /(.*[/\\](.*))[/\\](.*)/;
 export function getNode(job: JobInfo, file_name: string, file_path: string, update?: boolean): FileNode {
     let node;
     if (file_path === job.path) node = job.root;
-    else node = get(job.id, file_path);
+    // else node = get(job.id, file_path);
+    else node = job.nodeMap[file_path];
 
     if (node && !update) {
         return node;
@@ -14,7 +15,7 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
         node = { ...node }
     } else {
         node = {
-            parent: undefined,
+            // parent: undefined,
             name: file_name,
             path: file_path,
         };
@@ -47,7 +48,8 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
         job.root = node;
     }
 
-    set(job.id, file_path, node);
+    // set(job.id, file_path, node);
+    job.nodeMap[file_path] = node;
 
     return node;
 }
