@@ -52,11 +52,12 @@ export class TreeMapGraph {
 
     constructor() {
         this.app = new Application({
-            resolution: window.devicePixelRatio || 1,
+            resolution: 1,
             transparent: false,
             backgroundColor: 0x111,
             width: 640,
             height: 480,
+            autoDensity: false,
             // clearBeforeRender: false,
         });
         this.app.stage.addChild(this.container);
