@@ -34,8 +34,10 @@ const runJobAsync = createAsyncThunk(
             },
         });
 
+        const isRoot = path === jobCopy.path;
         const root = jobCopy.nodeMap[path];
-        if(path === jobCopy.path) {
+        const parentPath = isRoot ? undefined : getParentPath(path);
+        if(isRoot) {
             // root
             clearNode(jobCopy, root);
         } else {
@@ -76,8 +78,12 @@ const runJobAsync = createAsyncThunk(
             await invoke<string>('create_job', { id: fstatId, path }); // Call out to rust
         } catch(e) {
             if(e === "Path not found") {
-                calcSize(jobCopy, root, true);
-                dispatch({
+                if(parentPath) {
+                    const parent = jobCopy.nodeMap[parentPath];
+                    calcSize(jobCopy, parent, true);
+                    console.log("calc-size2: ", jobCopy.nodeMap[parentPath]?.info?.size);
+                }
+                await dispatch({
                     type: "jobs/finish",
                     payload: {
                         job,
@@ -90,7 +96,7 @@ const runJobAsync = createAsyncThunk(
             unlisten();
         }
         foundJob = findJob(getState() as RootState, job);
-        if (foundJob && foundJob.state !== JobState.done) {
+        if (foundJob && foundJob.state !== JobState.done && foundJob.state !== JobState.failed) {
             await dispatch({
                 type: "jobs/set-state",
                 payload: {
@@ -103,11 +109,15 @@ const runJobAsync = createAsyncThunk(
     }
 );
 
-function getParent(job: JobInfo, path: string): FileNode | undefined {
+function getParentPath(path: string): string | undefined {
     const match = path.match(path_regex);
     if(!match) return undefined;
-    const parent_path = match[1];
-    return job.nodeMap[parent_path];
+    return match[1];
+}
+
+function getParent(job: JobInfo, path: string): FileNode | undefined {
+    const parentPath = getParentPath(path);
+    return parentPath ? job.nodeMap[parentPath] : undefined;
 }
 
 function updateJobFile(job: JobInfo, file: JobFileInfo) {
@@ -154,6 +164,7 @@ function calcSize(job: JobInfo, node: FileNode, recurse: boolean) {
             node.size += child.size || 0;
         }
     }
+    if(node.info) node.info.size = node.size;
     const parent = getParent(job, node.path);
     if (recurse && parent) calcSize(job, parent, recurse);
 }
@@ -229,7 +240,7 @@ export const jobsSlice = createSlice({
             job.root = jobCopy.root;
             job.nodeMap = jobCopy.nodeMap;
             job.state = JobState.done;
-            console.log("Job finished: ", job);
+            console.log("Job finished: ", job, job.root.info?.size, jobCopy.root.info?.size);
         },
         "remove": (state, action) => {
             const index = state.jobs.findIndex(j => j.id === action.payload.job);
@@ -240,29 +251,6 @@ export const jobsSlice = createSlice({
             if (state.current >= index) state.current--;
             state.jobs.splice(index, 1);
         },
-        // "reset": (state, action) => {
-        //     const id = action.payload.id;
-        //     const job = state.jobs.find(j => j.id === id);
-        //     if (!job) {
-        //         console.warn(`Couldn't find job to reset: ${id}`);
-        //         return;
-        //     }
-        //     if (job.state === JobState.doing) {
-        //         console.warn(`Can't restart running job: ${id}`);
-        //         return;
-        //     }
-        //     job.state = JobState.invalid;
-
-        //     const root = action.payload.root || job.root;
-
-        //     clearNode(id, root);
-
-        //     if (job.root !== root) {
-        //         job.percent = calcPercent(job.root);
-        //     } else {
-        //         job.percent = 0;
-        //     }
-        // },
         "set-selected": (state, action) => {
             const job = state.jobs.find(j => j.id === action.payload.job);
             if (!job) {
@@ -324,19 +312,6 @@ export const createJob = (path: string): AppThunk => (
     if (job) dispatch(runJobAsync({ job: job.id, path: job.path }));
 };
 
-// export const restartJob = (id: number): AppThunk => (
-//     dispatch,
-//     getState,
-// ) => {
-//     console.log("restartJob: ", id);
-//     dispatch({
-//         type: "jobs/reset",
-//         payload: { id },
-//     });
-//     const job = findJob(getState(), id);
-//     if(job) dispatch(runJobAsync({job:job.id, path:job.path, root:job.root}));
-// };
-
 export const refresh = (id: number, path?: string): AppThunk => (
     dispatch,
     getState,
@@ -350,10 +325,6 @@ export const refresh = (id: number, path?: string): AppThunk => (
             console.error("Failed to find node in cache: ", id, path);
             return;
         }
-        // dispatch({
-        //     type: "jobs/reset",
-        //     payload: { id, root },
-        // });
         dispatch(runJobAsync({ job: job.id, path }));
     } else {
         console.error("Failed to find job with id: ", id);
