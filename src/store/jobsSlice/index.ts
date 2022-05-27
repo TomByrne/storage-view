@@ -109,7 +109,7 @@ const runJobAsync = createAsyncThunk(
     }
 );
 
-function getParentPath(path: string): string | undefined {
+export function getParentPath(path: string): string | undefined {
     const match = path.match(path_regex);
     if(!match) return undefined;
     return match[1];

@@ -1,13 +1,13 @@
-import { BugReport, ContentCopy, Launch, Cached, AddCircle } from "@mui/icons-material";
+import { BugReport, ContentCopy, Launch, Cached, AddCircle, Folder } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { clipboard, shell } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
-import { useEffect, createRef } from "react";
+import React, { useEffect, createRef } from "react";
 import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
 import { useAppDispatch } from "../../store/hooks";
-import { createJob, refresh } from "../../store/jobsSlice";
-import { FileNode, JobInfo } from "../../store/jobsSlice/types";
+import { createJob, getParentPath, refresh } from "../../store/jobsSlice";
+import { FileNode, JobFileInfo, JobInfo } from "../../store/jobsSlice/types";
 
 let explorerName = "Explorer";
 platform().then((name) => {
@@ -48,9 +48,21 @@ export default function ContextMenu() {
         clipboard.writeText(path);
     }
 
-    function openFile(path: string, openWith: string) {
+    function openFile(path: string) {
         handleClose();
-        shell.open(path, openWith);
+        shell.open(path);
+    }
+
+    function exploreTo(info?: JobFileInfo) {
+        handleClose();
+        if(!info) return;
+        if (info.is_dir)
+            shell.open(info.path);
+        else {
+            const parentPath = getParentPath(info.path);
+            if (parentPath) shell.open(parentPath);
+        }
+
     }
 
     function refreshFile(job: JobInfo, node: FileNode) {
@@ -78,7 +90,7 @@ export default function ContextMenu() {
             // </MenuItem>
         ];
     }
-    function renderNodeItems(job:JobInfo, node: FileNode) {
+    function renderNodeItems(job: JobInfo, node: FileNode) {
         return [
             <MenuItem key="node-title" disabled>
                 <ListItemText>{node.name}</ListItemText>
@@ -105,11 +117,18 @@ export default function ContextMenu() {
             //     <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
             // </MenuItem>,
 
-            <MenuItem key="node-open" onClick={() => openFile(node.path, "open")}>
+            !node.info ? <React.Fragment/> : <MenuItem key="node-explore" onClick={() => exploreTo(node.info)}>
+                <ListItemIcon>
+                    <Folder fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>{node.info?.is_dir ? "Open folder" : "Open parent folder"}</ListItemText>
+            </MenuItem>,
+
+            node.info?.is_dir ? <React.Fragment/> : <MenuItem key="node-open" onClick={() => openFile(node.path)}>
                 <ListItemIcon>
                     <Launch fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>{node.info?.is_dir ? "Show in " + explorerName : "Open file"}</ListItemText>
+                <ListItemText>Open file</ListItemText>
             </MenuItem>,
 
             <MenuItem key="node-copy-path" onClick={() => copyToClipboard(node.path)}>
@@ -149,7 +168,7 @@ export default function ContextMenu() {
         let ret: JSX.Element[] = [];
         if (context.job) {
             ret = ret.concat(renderJobItems(context.job));
-            
+
             if (context.node) {
                 if (ret.length) ret.push(<Divider key="divider-1" />);
                 ret = ret.concat(renderNodeItems(context.job, context.node));
