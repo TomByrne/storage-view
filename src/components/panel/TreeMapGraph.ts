@@ -113,20 +113,24 @@ export class TreeMapGraph {
         }, 1000);
     }
 
+    clear(){
+        if (!this.root) return;
+        for(const path in this.nodeMap) {
+            this.nodeMap[path].off("click");
+        }
+        this.rects = {};
+        this.nodeMap = {};
+        this.container.removeChildren();
+        this.outlines.clear();
+    }
+
     draw() {
         if (this.drawTimer !== undefined) {
             clearTimeout(this.drawTimer);
             this.drawTimer = undefined;
         }
-        // clear canvas
         if (this.root) {
-            for(const path in this.nodeMap) {
-                this.nodeMap[path].off("click");
-            }
-            this.rects = {};
-            this.nodeMap = {};
-            this.container.removeChildren();
-            this.outlines.clear();
+            this.clear();
             squarify(this.root, this.app.renderer.width, this.app.renderer.height, (n, x, y, w, h) => this.commitSize(n, x, y, w, h));
         }
     }

@@ -56,6 +56,7 @@ function TreeMap({
             if (graphElem.parentElement) {
                 graphElem.parentElement.removeChild(graphElem);
             }
+            currGraph.clear();
             currGraph.onClick = undefined;
             currGraph.onRightClick = undefined;
             graph.current = undefined;
