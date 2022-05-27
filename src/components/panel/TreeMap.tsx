@@ -1,8 +1,8 @@
 import './TreeMap.scss';
 import { FileNode, JobInfo, JobState } from '../../store/jobsSlice/types';
-import React, { createRef, useEffect, useRef } from 'react';
+import { createRef, useEffect, useRef } from 'react';
 import useRefDimensions from '../../utils/getRefDimensions';
-import { TreeMapGraph } from "./TreeMapGraph";
+import { TreeMapGraphs, TreeMapGraph } from "./TreeMapGraph";
 import { useDispatch } from 'react-redux';
 
 interface TreeMapProps {
@@ -45,11 +45,22 @@ function TreeMap({
     }, [dispatch, job.selectedPaths]);
 
     useEffect(() => {
-        graph.current = new TreeMapGraph();
+        graph.current = TreeMapGraphs.pop() || new TreeMapGraph();
         graph.current.onClick = (node: FileNode, add: boolean) => (onNodeClick.current ? onNodeClick.current(node, add) : null);
         graph.current.onRightClick = (node: FileNode, x:number, y:number) => (onNodeRightClick.current ? onNodeRightClick.current(node, x, y) : null);
 
-        return () => graph.current?.destroy();
+        return () => {
+            const currGraph = graph.current;
+            if(!currGraph) return;
+            const graphElem = currGraph.elem;
+            if (graphElem.parentElement) {
+                graphElem.parentElement.removeChild(graphElem);
+            }
+            currGraph.onClick = undefined;
+            currGraph.onRightClick = undefined;
+            graph.current = undefined;
+            TreeMapGraphs.push(currGraph);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [job.id]);
 

@@ -35,6 +35,8 @@ function createGradientTexture(colors: string[], w = 100, h = 100): Texture {
 const max_size = 4096;
 const gradient_cache: Record<string, Texture> = {};
 
+export const TreeMapGraphs: TreeMapGraph[] = [];
+
 export class TreeMapGraph {
     app: Application;
     drawTimer: undefined | NodeJS.Timeout;
@@ -144,7 +146,7 @@ export class TreeMapGraph {
 
         const too_small = Math.sqrt(w * w + h * h) < smallest_area;
         if (node.info?.is_dir === false || too_small) {
-            console.log("commitSize: ", x, y, w, h, node);
+            // console.log("commitSize: ", x, y, w, h, node);
             const rect = new Sprite(this.getTexture(node.theme));
             rect.x = x;
             rect.y = y;
