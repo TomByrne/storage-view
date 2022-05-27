@@ -164,13 +164,11 @@ export default function ContextMenu() {
 
     const items = renderItems();
 
-    const anchor = document.getElementById("context-pos");
-    if(!anchor) return null;
 
     return <div>
         <div id="context-pos" style={{ position: 'absolute', left: context.x + "px", top: context.y + "px", background: "#000" }} ref={positionElem} />
         <Menu
-            anchorEl={anchor}
+            anchorEl={document.getElementById("context-pos")}
             open={!!context.element && !!items.length}
             onClose={handleClose}
         >
