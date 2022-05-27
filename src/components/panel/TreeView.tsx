@@ -26,7 +26,7 @@ export default function TreeView({
     function getLabel(node: FileNode) {
         return <React.Fragment>
             <span className="file-name">{node.name}</span>
-            <span className="file-size">{(node.size ? ' (' + formatBytes(node.size) + ')' : '(calculating...)')}</span>
+            <span className="file-size">{' (' + formatBytes(node.size || 0) + ')'}</span>
         </React.Fragment>;
     }
 
