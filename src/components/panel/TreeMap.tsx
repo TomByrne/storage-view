@@ -22,7 +22,6 @@ function TreeMap({
     let onNodeRightClick = useRef<(node: FileNode, x:number, y:number) => void>();
 
     useEffect(() => {
-        if(!graph.current) return;
         onNodeClick.current = (node: FileNode, add: boolean) => {
             const path = node.path;
             const isSelected = job.selectedPaths.includes(path);
