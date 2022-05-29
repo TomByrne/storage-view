@@ -6,8 +6,9 @@ import { getNode, path_regex } from './getNode';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 import { getTheme } from '../../utils/themes';
 import sortNodes from './sortNodes';
-import { path } from '@tauri-apps/api';
+import { fs, path } from '@tauri-apps/api';
 import lodash from 'lodash';
+import removePathOverlaps from '../../utils/removePathOverlaps';
 
 let lastId = 0;
 
@@ -37,19 +38,19 @@ const runJobAsync = createAsyncThunk(
         const isRoot = path === jobCopy.path;
         const root = jobCopy.nodeMap[path];
         const parentPath = isRoot ? undefined : getParentPath(path);
-        if(isRoot) {
+        if (isRoot) {
             // root
             clearNode(jobCopy, root);
         } else {
             // not root, must fully remove in case path has been deleted
             clearNode(jobCopy, root, true);
             const parent = getParent(jobCopy, path);
-            if(parent && parent.children) {
+            if (parent && parent.children) {
                 parent.child_count = parent.child_count ? parent.child_count - 1 : 0;
                 parent.children = parent.children.filter((c) => c.path !== path);
             }
         }
-        
+
         const unlisten = await listen('create_job/prog', event => {
             const prog = event.payload as JobProgress;
             if (prog.job !== fstatId) return;
@@ -76,9 +77,9 @@ const runJobAsync = createAsyncThunk(
         console.log("Begin job");
         try {
             await invoke<string>('create_job', { id: fstatId, path }); // Call out to rust
-        } catch(e) {
-            if(e === "Path not found") {
-                if(parentPath) {
+        } catch (e) {
+            if (e === "Path not found") {
+                if (parentPath) {
                     const parent = jobCopy.nodeMap[parentPath];
                     calcSize(jobCopy, parent, true);
                     console.log("calc-size2: ", jobCopy.nodeMap[parentPath]?.info?.size);
@@ -109,9 +110,32 @@ const runJobAsync = createAsyncThunk(
     }
 );
 
+export const deleteFilesAsync = createAsyncThunk(
+    'jobs/delete-files-final',
+    async ({ files }: { files: FileNode[] }, { dispatch, getState }) => {
+        files = removePathOverlaps(files);
+        const state = getState() as RootState;
+        for (const f of files) {
+            if (f.info?.is_dir)
+                await fs.removeDir(f.path, { recursive: true });
+            else
+                await fs.removeFile(f.path);
+
+
+            for (const job of state.jobs.jobs) {
+                if (job.nodeMap[f.path])
+                     dispatch(runJobAsync({ job: job.id, path:f.path }));
+            }
+
+        }
+        dispatch({ type: "jobs/delete-files-cancel" });
+
+    }
+);
+
 export function getParentPath(path: string): string | undefined {
     const match = path.match(path_regex);
-    if(!match) return undefined;
+    if (!match) return undefined;
     return match[1];
 }
 
@@ -144,7 +168,7 @@ function clearNode(job: JobInfo, node: FileNode, clearMap?: boolean) {
         node.children = [];
         node.map = {};
     }
-    if(clearMap) delete job.nodeMap[node.path];
+    if (clearMap) delete job.nodeMap[node.path];
 }
 
 function calcPercent(node: FileNode): number {
@@ -164,7 +188,7 @@ function calcSize(job: JobInfo, node: FileNode, recurse: boolean) {
             node.size += child.size || 0;
         }
     }
-    if(node.info) node.info.size = node.size;
+    if (node.info) node.info.size = node.size;
     const parent = getParent(job, node.path);
     if (recurse && parent) calcSize(job, parent, recurse);
 }
@@ -173,6 +197,8 @@ const initialState: JobsState = {
     lastJobId: 0,
     current: 0,
     jobs: [],
+
+    pendingDeletes: undefined,
 };
 
 
@@ -203,7 +229,7 @@ export const jobsSlice = createSlice({
                 expandedPaths: [path],
                 selectedPaths: [],
                 hoverPaths: [],
-                nodeMap: {[path]:root},
+                nodeMap: { [path]: root },
             }
             state.jobs.push(job);
             console.log("Created new job: ", job);
@@ -282,6 +308,12 @@ export const jobsSlice = createSlice({
 
             job.expandedPaths = action.payload.paths;
         },
+        "delete-files-confirm": (state, action) => {
+            state.pendingDeletes = removePathOverlaps(action.payload.files);
+        },
+        "delete-files-cancel": (state, action) => {
+            state.pendingDeletes = undefined;
+        },
     },
 });
 
@@ -296,6 +328,7 @@ export const selectCurrent = (state: RootState) => state.jobs.current;
 export const selectJob = (state: RootState) => state.jobs.jobs[state.jobs.current];
 export const selectJobs = (state: RootState) => state.jobs.jobs;
 export const selectHasJobs = (state: RootState) => state.jobs.jobs.length > 0;
+export const selectPendingDeletes = (state: RootState) => state.jobs.pendingDeletes;
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.

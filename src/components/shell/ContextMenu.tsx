@@ -1,7 +1,6 @@
-import { BugReport, ContentCopy, Launch, Cached, AddCircle, Folder } from "@mui/icons-material";
+import { BugReport, ContentCopy, Launch, Cached, AddCircle, Folder, Delete } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { clipboard, shell } from "@tauri-apps/api";
-import { platform } from "@tauri-apps/api/os";
 import React, { useEffect, createRef } from "react";
 import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
@@ -9,10 +8,10 @@ import { useAppDispatch } from "../../store/hooks";
 import { createJob, getParentPath, refresh } from "../../store/jobsSlice";
 import { FileNode, JobFileInfo, JobInfo } from "../../store/jobsSlice/types";
 
-let explorerName = "Explorer";
-platform().then((name) => {
-    if (name === "darwin" || name === "ios") explorerName = "Finder";
-})
+// let explorerName = "Explorer";
+// platform().then((name) => {
+//     if (name === "darwin" || name === "ios") explorerName = "Finder";
+// })
 
 export default function ContextMenu() {
     const positionElem = createRef<HTMLDivElement>();
@@ -55,7 +54,7 @@ export default function ContextMenu() {
 
     function exploreTo(info?: JobFileInfo) {
         handleClose();
-        if(!info) return;
+        if (!info) return;
         if (info.is_dir)
             shell.open(info.path);
         else {
@@ -75,12 +74,10 @@ export default function ContextMenu() {
         dispatch(createJob(node.path));
     }
 
-    // function deleteFile(node: FileNode, check = true) {
-    //     const msg = "Are you sure you want to delete the " + (node.info?.is_dir ? "folder" : "file") + "\n" + node.name;
-    //     if (!check || window.confirm(msg)) {
-    //         console.log("YEsh");
-    //     }
-    // }
+    function deleteFile(node: FileNode) {
+        handleClose();
+        dispatch({ type: "jobs/delete-files-confirm", payload: { files: [node] } });
+    }
 
     function renderJobItems(job: JobInfo) {
         //TODO: Add progress, etc
@@ -110,21 +107,21 @@ export default function ContextMenu() {
                 <ListItemText>Scan in new tab</ListItemText>
             </MenuItem>,
 
-            // <MenuItem key="node-delete" onClick={() => deleteFile(node)}>
-            //     <ListItemIcon>
-            //         <Delete fontSize="small" />
-            //     </ListItemIcon>
-            //     <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
-            // </MenuItem>,
+            <MenuItem key="node-delete" onClick={() => deleteFile(node)}>
+                <ListItemIcon>
+                    <Delete fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
+            </MenuItem>,
 
-            !node.info ? <React.Fragment/> : <MenuItem key="node-explore" onClick={() => exploreTo(node.info)}>
+            !node.info ? <React.Fragment /> : <MenuItem key="node-explore" onClick={() => exploreTo(node.info)}>
                 <ListItemIcon>
                     <Folder fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>{node.info?.is_dir ? "Open folder" : "Open parent folder"}</ListItemText>
             </MenuItem>,
 
-            node.info?.is_dir ? <React.Fragment/> : <MenuItem key="node-open" onClick={() => openFile(node.path)}>
+            node.info?.is_dir ? <React.Fragment /> : <MenuItem key="node-open" onClick={() => openFile(node.path)}>
                 <ListItemIcon>
                     <Launch fontSize="small" />
                 </ListItemIcon>
@@ -137,14 +134,6 @@ export default function ContextMenu() {
                 </ListItemIcon>
                 <ListItemText>Copy file path</ListItemText>
             </MenuItem>,
-
-            // No API to show files in OS yet
-            // <MenuItem key="node-explore">
-            //     <ListItemIcon>
-            //         <DriveFileMove fontSize="small" />
-            //     </ListItemIcon>
-            //     <ListItemText>Show in {explorerName}</ListItemText>
-            // </MenuItem>
         ];
     }
 

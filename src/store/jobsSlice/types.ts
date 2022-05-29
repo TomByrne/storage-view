@@ -28,6 +28,9 @@ export interface JobsState {
     lastJobId: number,
     current: number,
     jobs: JobInfo[],
+
+    //TODO: move into a new model
+    pendingDeletes: FileNode[] | undefined,
 }
 
 export interface JobBrief {
