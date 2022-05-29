@@ -3,6 +3,8 @@
 This is a React/Tauri front-end to the [fstat](https://github.com/TomByrne/fstat-rs) Rust project.
 It is heavily inspired by the [WinDirStat](https://windirstat.net/) project, but really serves as a way to explore several new technologies.
 
+![Screenshot of Storage View](./docs/img/screenshot-contextmenu.jpg)
+
 ## Tech
 
 - **[Rust](https://www.rust-lang.org/):** Application backend and fstat file recursion.
