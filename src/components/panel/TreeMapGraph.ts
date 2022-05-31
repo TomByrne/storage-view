@@ -180,7 +180,7 @@ export class TreeMapGraph {
     }
 
     checkHighlit(path: string, node: Sprite) {
-        node.alpha = this.highlit.length == 0 || this.highlit.includes(path) ? 1 : 0.5;
+        node.alpha = this.highlit.length === 0 || this.highlit.includes(path) ? 1 : 0.5;
     }
 
     drawOutline(path: string) {
