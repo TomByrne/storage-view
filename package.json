@@ -34,6 +34,7 @@
   "scripts": {
     "postinstall": "yarn gen-icons",
     "start": "yarn tauri dev",
+    "build": "yarn tauri build",
     "react:start": "cross-env BROWSER=none react-scripts start",
     "react:build": "react-scripts build",
     "react:test": "react-scripts test",
