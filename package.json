@@ -39,7 +39,7 @@
     "react:test": "react-scripts test",
     "react:eject": "react-scripts eject",
     "tauri": "tauri",
-    "gen-icons": "npx @tauri-apps/tauricon .\\public\\icon.svg"
+    "gen-icons": "npx @tauri-apps/tauricon ./public/icon.svg"
   },
   "eslintConfig": {
     "extends": [
