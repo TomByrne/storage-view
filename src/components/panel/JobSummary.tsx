@@ -1,9 +1,9 @@
-import './JobSummary.scss';
-import { refresh } from '../../store/jobsSlice';
-import { IconButton, Paper } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
+import { IconButton, Paper } from '@mui/material';
 import { useAppDispatch } from '../../store/hooks';
+import { refresh } from '../../store/jobsSlice';
 import { JobInfo } from '../../store/jobsSlice/types';
+import './JobSummary.scss';
 
 
 interface TreeViewProps {
@@ -14,10 +14,10 @@ export default function TreeView({
     job,
     className
 }: TreeViewProps) {
-    
+
     const dispatch = useAppDispatch();
 
-    function rerun(){
+    function rerun() {
         dispatch(refresh(job.id));
     }
 
@@ -25,7 +25,7 @@ export default function TreeView({
         <div className={className + " job-summary"}>
             <Paper className={job.state + " job-summary-paper"}>
                 {job.state}
-                <IconButton onClick={rerun}><Refresh fontSize="small"/></IconButton>
+                <IconButton onClick={rerun}><Refresh fontSize="small" /></IconButton>
             </Paper>
         </div>
     );

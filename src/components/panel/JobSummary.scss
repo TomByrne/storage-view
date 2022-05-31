@@ -4,12 +4,13 @@
     .job-summary-paper {
         padding: 10px;
         text-transform: uppercase;
-        text-align: center ;
+        text-align: center;
 
-        &.doing { 
+        &.doing {
             background-color: #11611c;
         }
-        &.failed { 
+
+        &.failed {
             background-color: #8d1818;
         }
     }

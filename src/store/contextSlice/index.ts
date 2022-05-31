@@ -1,7 +1,7 @@
 
-import { ContextState } from './types';
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
+import { ContextState } from './types';
 
 const initialState: ContextState = {
     element: undefined,

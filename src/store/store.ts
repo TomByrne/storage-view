@@ -1,7 +1,7 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import jobsReducer from './jobsSlice';
+import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import contextReducer from './contextSlice';
 import devReducer from './devSlice';
+import jobsReducer from './jobsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +11,7 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      immutableCheck : false,
+      immutableCheck: false,
       serializableCheck: false,
     }),
 });

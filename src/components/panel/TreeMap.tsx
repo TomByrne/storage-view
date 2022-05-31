@@ -1,9 +1,9 @@
-import './TreeMap.scss';
-import { FileNode, JobInfo, JobState } from '../../store/jobsSlice/types';
 import { createRef, useEffect, useRef } from 'react';
-import useRefDimensions from '../../utils/getRefDimensions';
-import { TreeMapGraphs, TreeMapGraph } from "./TreeMapGraph";
 import { useDispatch } from 'react-redux';
+import { FileNode, JobInfo, JobState } from '../../store/jobsSlice/types';
+import useRefDimensions from '../../utils/getRefDimensions';
+import './TreeMap.scss';
+import { TreeMapGraph, TreeMapGraphs } from "./TreeMapGraph";
 
 interface TreeMapProps {
     job: JobInfo;
@@ -19,7 +19,7 @@ function TreeMap({
 
     let graph = useRef<TreeMapGraph>();
     let onNodeClick = useRef<(node: FileNode, add: boolean) => void>();
-    let onNodeRightClick = useRef<(node: FileNode, x:number, y:number) => void>();
+    let onNodeRightClick = useRef<(node: FileNode, x: number, y: number) => void>();
 
     useEffect(() => {
         onNodeClick.current = (node: FileNode, add: boolean) => {
@@ -31,26 +31,26 @@ function TreeMap({
             } else {
                 nodeIds = add ? [...job.selectedPaths, path] : [path];
             }
-            dispatch({ type: "jobs/set-selected", payload: { job: job.id, paths: nodeIds, expandTo:true } });
+            dispatch({ type: "jobs/set-selected", payload: { job: job.id, paths: nodeIds, expandTo: true } });
         }
-        onNodeRightClick.current = (node: FileNode, x:number, y:number) => {
+        onNodeRightClick.current = (node: FileNode, x: number, y: number) => {
             // Must delay, overwise the contextmenu event still makes it to the doc level
             setTimeout(() => {
                 console.log("onNodeRightClick: ", node);
-                dispatch({ type: "context/set", payload: { element:graph.current?.elem , node, job, x, y  } });
+                dispatch({ type: "context/set", payload: { element: graph.current?.elem, node, job, x, y } });
             }, 100);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch, job.selectedPaths]);
 
     useEffect(() => {
         graph.current = TreeMapGraphs.pop() || new TreeMapGraph();
         graph.current.onClick = (node: FileNode, add: boolean) => (onNodeClick.current ? onNodeClick.current(node, add) : null);
-        graph.current.onRightClick = (node: FileNode, x:number, y:number) => (onNodeRightClick.current ? onNodeRightClick.current(node, x, y) : null);
+        graph.current.onRightClick = (node: FileNode, x: number, y: number) => (onNodeRightClick.current ? onNodeRightClick.current(node, x, y) : null);
 
         return () => {
             const currGraph = graph.current;
-            if(!currGraph) return;
+            if (!currGraph) return;
             const graphElem = currGraph.elem;
             if (graphElem.parentElement) {
                 graphElem.parentElement.removeChild(graphElem);

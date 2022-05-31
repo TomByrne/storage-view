@@ -1,4 +1,4 @@
-import { Application, BLEND_MODES, Graphics, InteractionEvent, LINE_CAP, LINE_JOIN, Rectangle, Sprite, Texture } from 'pixi.js'
+import { Application, BLEND_MODES, Graphics, InteractionEvent, LINE_CAP, LINE_JOIN, Rectangle, Sprite, Texture } from 'pixi.js';
 import { FileNode, FileNodeTheme } from '../../store/jobsSlice/types';
 import squarify from '../../utils/squarify';
 import { defaultTheme } from '../../utils/themes';
@@ -45,12 +45,12 @@ export class TreeMapGraph {
     highlit: string[] = [];
 
 
-    container:Sprite = new Sprite();
-    outlines:Graphics = new Graphics();
-    rects:Record<string, Rectangle> = {};
+    container: Sprite = new Sprite();
+    outlines: Graphics = new Graphics();
+    rects: Record<string, Rectangle> = {};
 
-    onClick: ((node:FileNode, add:boolean) => void) | undefined;
-    onRightClick: ((node: FileNode, x:number, y:number) => void) | undefined;
+    onClick: ((node: FileNode, add: boolean) => void) | undefined;
+    onRightClick: ((node: FileNode, x: number, y: number) => void) | undefined;
 
     constructor() {
         this.app = new Application({
@@ -95,13 +95,13 @@ export class TreeMapGraph {
     setHighlit(paths: string[]) {
         this.highlit = paths;
 
-        for(const id in this.nodeMap) {
+        for (const id in this.nodeMap) {
             this.checkHighlit(id, this.nodeMap[id]);
         }
 
         this.outlines.clear();
-        for(const path of paths) {
-            if(!this.nodeMap[path]) this.drawOutline(path);
+        for (const path of paths) {
+            if (!this.nodeMap[path]) this.drawOutline(path);
         }
     }
 
@@ -113,9 +113,9 @@ export class TreeMapGraph {
         }, 1000);
     }
 
-    clear(){
+    clear() {
         if (!this.root) return;
-        for(const path in this.nodeMap) {
+        for (const path in this.nodeMap) {
             this.nodeMap[path].off("click");
         }
         this.rects = {};
@@ -162,18 +162,18 @@ export class TreeMapGraph {
             this.nodeMap[node.path] = rect;
             this.checkHighlit(node.path, rect);
 
-            rect.on("click", (e:InteractionEvent) => {
-                if(this.onClick) this.onClick(node, e.data.originalEvent.ctrlKey);
+            rect.on("click", (e: InteractionEvent) => {
+                if (this.onClick) this.onClick(node, e.data.originalEvent.ctrlKey);
             })
 
-            rect.on("rightclick", (e:InteractionEvent) => {
-                if(!this.onRightClick) return;
+            rect.on("rightclick", (e: InteractionEvent) => {
+                if (!this.onRightClick) return;
                 const bounds = this.app.view.getBoundingClientRect();
                 const x = e.data.global.x + bounds.left;
                 const y = e.data.global.y + bounds.top;
                 this.onRightClick(node, x, y);
             })
-        } else if(this.highlit.includes(node.path)) {
+        } else if (this.highlit.includes(node.path)) {
             this.drawOutline(node.path);
         }
         return !too_small;
@@ -185,7 +185,7 @@ export class TreeMapGraph {
 
     drawOutline(path: string) {
         const rect = this.rects[path];
-        if(!rect) return;
+        if (!rect) return;
         this.outlines.lineStyle({
             color: 0x444444,
             width: Math.min(10, rect.width / 2, rect.height / 2),

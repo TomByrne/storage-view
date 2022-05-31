@@ -1,8 +1,8 @@
 
-import { DevState } from './types';
 import { createSlice } from '@reduxjs/toolkit';
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/tauri';
 import { RootState } from '../store';
+import { DevState } from './types';
 
 const initialState: DevState = {
     devtools_shown: false,

@@ -1,10 +1,8 @@
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
-import { useAppDispatch } from "../../store/hooks";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Box } from "@mui/system";
+import { useAppDispatch } from "../../store/hooks";
+import { deleteFilesAsync } from "../../store/jobsSlice";
 import { FileNode } from "../../store/jobsSlice/types";
-import { store } from "../../store/store";
-import { deleteFilesAsync, refresh, selectJobs } from "../../store/jobsSlice";
-import { useSelector } from "react-redux";
 
 interface DeleteConfirmProps {
     files: FileNode[] | undefined,
@@ -15,26 +13,24 @@ export default function DeleteConfirm({
 }: DeleteConfirmProps) {
 
     const dispatch = useAppDispatch();
-    const jobs = useSelector(selectJobs);
-
 
     function cancelDelete() {
         dispatch({ type: "jobs/delete-files-cancel" });
     }
 
     function doDelete() {
-        if(!files) return;
-        dispatch(deleteFilesAsync({ files } ));
+        if (!files) return;
+        dispatch(deleteFilesAsync({ files }));
     }
 
     function listFiles() {
-        if(!files) return null;
+        if (!files) return null;
         return files.map((f) => <Box key={f.path}>{f.path}</Box>);
     }
 
     let desc = '';
-    if(files){
-        if(files.length === 1) {
+    if (files) {
+        if (files.length === 1) {
             const file = files[0];
             desc = file.info?.is_dir ? "this folder" : "this file";
         } else {
@@ -52,7 +48,7 @@ export default function DeleteConfirm({
         </DialogTitle>
         <DialogContent>
             <DialogContentText id="dialog-description">
-                { listFiles() }
+                {listFiles()}
             </DialogContentText>
         </DialogContent>
         <DialogActions>

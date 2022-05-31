@@ -120,7 +120,6 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
   };
   job_data.handle.emit_all("create_job/prog", prog).unwrap();
   // }
-  
   println!("Job finished: {}", path);
 
   return Ok(());

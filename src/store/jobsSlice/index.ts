@@ -1,14 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { RootState, AppThunk } from '../store';
-import { invoke } from '@tauri-apps/api/tauri'
-import { listen } from '@tauri-apps/api/event';
-import { getNode, path_regex } from './getNode';
-import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
-import { getTheme } from '../../utils/themes';
-import sortNodes from './sortNodes';
 import { fs, path } from '@tauri-apps/api';
+import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/tauri';
 import lodash from 'lodash';
 import removePathOverlaps from '../../utils/removePathOverlaps';
+import { getTheme } from '../../utils/themes';
+import { AppThunk, RootState } from '../store';
+import { getNode, path_regex } from './getNode';
+import sortNodes from './sortNodes';
+import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 
 let lastId = 0;
 
@@ -124,7 +124,7 @@ export const deleteFilesAsync = createAsyncThunk(
 
             for (const job of state.jobs.jobs) {
                 if (job.nodeMap[f.path])
-                     dispatch(runJobAsync({ job: job.id, path:f.path }));
+                    dispatch(runJobAsync({ job: job.id, path: f.path }));
             }
 
         }

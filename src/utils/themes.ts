@@ -1,28 +1,28 @@
 import { FileNode, FileNodeTheme } from "../store/jobsSlice/types";
 
-const themes:Record<string, FileNodeTheme> = {
+const themes: Record<string, FileNodeTheme> = {
 }
 
-export function getTheme(node:FileNode): FileNodeTheme | undefined {
-    if(!node.info || node.info.is_dir) return undefined;
+export function getTheme(node: FileNode): FileNodeTheme | undefined {
+    if (!node.info || node.info.is_dir) return undefined;
 
     const ext = node.name.substring(node.name.lastIndexOf(".") + 1);
     return themes[ext] || defaultTheme;
 }
 
-export function addTheme(exts:string[], theme:FileNodeTheme) {
-    for(var ext of exts) themes[ext] = theme;
+export function addTheme(exts: string[], theme: FileNodeTheme) {
+    for (var ext of exts) themes[ext] = theme;
 }
 
 
 // Any other files
-export const defaultTheme:FileNodeTheme = {
+export const defaultTheme: FileNodeTheme = {
     id: "default",
     colors: ["#dfeb74", "#b2bb61"]
 }
 
 // code
-addTheme(["js","ts", "jsx", "tsx", "c", "h", "java", "class", "obj", "cgi", "pl", "py", "rs", "sh", "ps1", "swift", "vb", "cpp", "as", "hx", "vue"], {
+addTheme(["js", "ts", "jsx", "tsx", "c", "h", "java", "class", "obj", "cgi", "pl", "py", "rs", "sh", "ps1", "swift", "vb", "cpp", "as", "hx", "vue"], {
     id: "code",
     colors: ["#45d45d", "#309742"],
 });

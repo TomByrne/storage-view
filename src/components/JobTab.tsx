@@ -2,9 +2,9 @@ import { Box, Drawer } from '@mui/material';
 import { useState } from 'react';
 import { JobInfo } from '../store/jobsSlice/types';
 import './JobTab.scss';
-import TreeView from './panel/TreeView';
 import JobSummary from './panel/JobSummary';
 import TreeMap from './panel/TreeMap';
+import TreeView from './panel/TreeView';
 
 interface JobTabProps {
   job: JobInfo;

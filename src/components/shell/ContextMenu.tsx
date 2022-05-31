@@ -1,7 +1,7 @@
-import { BugReport, ContentCopy, Launch, Cached, AddCircle, Folder, Delete } from "@mui/icons-material";
+import { AddCircle, BugReport, Cached, ContentCopy, Delete, Folder, Launch } from "@mui/icons-material";
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { clipboard, shell } from "@tauri-apps/api";
-import React, { useEffect, createRef } from "react";
+import React, { createRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
 import { useAppDispatch } from "../../store/hooks";

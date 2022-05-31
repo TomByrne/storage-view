@@ -1,13 +1,12 @@
-import { useSelector } from "react-redux";
-import { selectJob, selectHasJobs, selectPendingDeletes } from "../store/jobsSlice";
-import NewFilePathJobModal from "./modal/NewFilePathJobModal";
-import JobTabs from "./shell/JobTabs";
-import JobTab from './JobTab';
 import { Box } from "@mui/material";
 import React, { useEffect } from "react";
-import ContextMenu from "./shell/ContextMenu";
+import { useDispatch, useSelector } from "react-redux";
+import { selectHasJobs, selectJob, selectPendingDeletes } from "../store/jobsSlice";
+import JobTab from './JobTab';
 import DeleteConfirm from "./modal/DeleteConfirm";
-import { useDispatch } from "react-redux";
+import NewFilePathJobModal from "./modal/NewFilePathJobModal";
+import ContextMenu from "./shell/ContextMenu";
+import JobTabs from "./shell/JobTabs";
 
 const stackStyle = {
     display: 'flex',
