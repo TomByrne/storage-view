@@ -5,8 +5,9 @@ import React, { createRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectContext } from "../../store/contextSlice";
 import { useAppDispatch } from "../../store/hooks";
-import { createJob, getParentPath, refresh } from "../../store/jobsSlice";
+import { createJob, refresh } from "../../store/jobsSlice";
 import { FileNode, JobFileInfo, JobInfo } from "../../store/jobsSlice/types";
+import { getParentPath } from "../../utils/getParentPath";
 
 // let explorerName = "Explorer";
 // platform().then((name) => {
