@@ -15,7 +15,7 @@ version = "0.1.0"
 tauri-build = {version = "1.0.0-rc.5", features = [] }
 
 [dependencies]
-fstat = {path = "../../fstat-rs"}
+fstat = {path = "../submodules/fstat-rs"}
 serde = {version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = {version = "1.0.0-rc.5", features = ["api-all", "devtools"] }
