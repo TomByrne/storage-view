@@ -3,10 +3,12 @@ import { fs, path } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/tauri';
 import lodash from 'lodash';
+import { getParentPath } from '../../utils/getParentPath';
+import { getPathName } from '../../utils/getPathName';
 import removePathOverlaps from '../../utils/removePathOverlaps';
 import { getTheme } from '../../utils/themes';
 import { AppThunk, RootState } from '../store';
-import { getNode, path_regex } from './getNode';
+import { getNode } from './getNode';
 import sortNodes from './sortNodes';
 import { FileNode, JobFileInfo, JobInfo, JobsState, JobState } from './types';
 
@@ -133,28 +135,19 @@ export const deleteFilesAsync = createAsyncThunk(
     }
 );
 
-export function getParentPath(path: string): string | undefined {
-    const match = path.match(path_regex);
-    if (!match) return undefined;
-    return match[1];
-}
-
 function getParent(job: JobInfo, path: string): FileNode | undefined {
     const parentPath = getParentPath(path);
     return parentPath ? job.nodeMap[parentPath] : undefined;
 }
 
-function updateJobFile(job: JobInfo, file: JobFileInfo) {
+function updateJobFile(job: JobInfo, file: JobFileInfo): FileNode {
     let node: FileNode = getNode(job, file.name, file.path, false);
     node.info = file;
     node.name = file.name;
     node.size = file.size;
     node.child_count = file.child_count;
     node.theme = getTheme(node);
-    const parent = getParent(job, node.path);
-    if (node.size && parent) {
-        calcSize(job, parent, true);
-    }
+    return node;
 }
 
 function clearNode(job: JobInfo, node: FileNode, clearMap?: boolean) {
@@ -190,8 +183,10 @@ function calcSize(job: JobInfo, node: FileNode, recurse: boolean) {
         }
     }
     if (node.info) node.info.size = node.size;
-    const parent = getParent(job, node.path);
-    if (recurse && parent) calcSize(job, parent, recurse);
+    if (recurse) {
+        const parent = getParent(job, node.path);
+        if (parent) calcSize(job, parent, recurse);
+    }
 }
 
 const initialState: JobsState = {
@@ -212,8 +207,7 @@ export const jobsSlice = createSlice({
             const id = state.lastJobId++;
             if (action.payload.setCurrent) state.current = state.jobs.length;
             const path = action.payload.path;
-            const match = path.match(path_regex);
-            const name = (match ? match[3] || path : path);
+            const name = getPathName(path);
             const root = {
                 parent: undefined,
                 name: name,
@@ -245,7 +239,23 @@ export const jobsSlice = createSlice({
             const jobCopy: JobInfo = action.payload.jobCopy;
             const progress: JobProgress = action.payload;
 
-            for (const file of progress.files) updateJobFile(jobCopy, file);
+            const invalid_size: FileNode[] = [];
+
+            for (const file of progress.files) {
+                const node = updateJobFile(jobCopy, file);
+
+                if (node.size) {
+                    const parent = getParent(jobCopy, node.path);
+                    if (parent && invalid_size.indexOf(parent) === -1)
+                        invalid_size.push(parent);
+                }
+            }
+            for (const node of invalid_size) {
+                calcSize(jobCopy, node, false);
+                const parent = getParent(jobCopy, node.path);
+                if (parent && invalid_size.indexOf(parent) === -1)
+                    invalid_size.push(parent);
+            }
 
             const jobInfo = state.jobs.find(j => j.id === jobCopy.id);
             if (jobInfo) {
@@ -271,7 +281,7 @@ export const jobsSlice = createSlice({
             job.nodeMap = jobCopy.nodeMap;
             job.state = JobState.done;
             job.percent = calcPercent(job.root);
-            console.log("Job finished: ", lodash.cloneDeep(job));
+            console.log("Job finished: ", job.root);
         },
         "remove": (state, action) => {
             const index = state.jobs.findIndex(j => j.id === action.payload.job);

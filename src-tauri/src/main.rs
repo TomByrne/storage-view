@@ -40,9 +40,11 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
     return Err(format!("Path not found"));
   }
 
+  let verbose = false; // cfg!(debug_assertions);
+
   let opts = FStatOptions {
     multithread: true,
-    verbose: false,
+    verbose: verbose,
     output: OutputOption::All,
   };
 
@@ -64,6 +66,7 @@ async fn create_job(handle: AppHandle, id: i32, path: String) -> Result<(), Stri
       total: fs.total,
       time: fs.time_s,
       size: fs.size_b,
+      success: fs.success,
     };
 
     let mut pending = data.pending.lock().unwrap();
@@ -148,6 +151,7 @@ struct JobFileInfo {
   depth: u32,
   index: u32,
   total: u32,
+  success: bool,
 
   time: u64, // seconds
   size: u64, // bytes

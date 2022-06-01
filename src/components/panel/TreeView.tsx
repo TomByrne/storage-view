@@ -26,7 +26,13 @@ export default function TreeView({
     function getLabel(node: FileNode) {
         return <React.Fragment>
             <span className="file-name">{node.name}</span>
-            <span className="file-size">{' (' + formatBytes(node.size || 0) + ')'}</span>
+            {!node.info ?
+                <span className="file-size">{' (Reading)'}</span>
+                : node.info?.success ?
+                    <span className="file-size">{' (' + formatBytes(node.size || 0) + ')'}</span>
+                    :
+                    <span className="file-size">{' (Failed)'}</span>
+            }
         </React.Fragment>;
     }
 
@@ -38,6 +44,9 @@ export default function TreeView({
 
         return node.children.map((child) => renderTree(child));
     }
+    function getClassName(node: FileNode) {
+        return "tree-node" + (node.info?.success === false ? " failed" : "")
+    }
 
     function onContextMenu(e: React.MouseEvent, node: FileNode) {
         console.log("onContextMenu: ", node);
@@ -47,7 +56,7 @@ export default function TreeView({
     }
 
     const renderTree = (node: FileNode) => {
-        return <TreeItem className="tree-node" key={node.path} nodeId={node.path} label={getLabel(node)} onContextMenu={(e) => onContextMenu(e, node)}>
+        return <TreeItem className={getClassName(node)} key={node.path} nodeId={node.path} label={getLabel(node)} onContextMenu={(e) => onContextMenu(e, node)}>
             {renderChildren(node)}
         </TreeItem>;
     };

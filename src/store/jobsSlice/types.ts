@@ -15,6 +15,7 @@ export interface JobFileInfo {
     name: string,
     is_dir: boolean,
     child_count: number,
+    success: boolean,
 
     depth: number,
     index: number,
