@@ -174,11 +174,12 @@ function clearNode(job: JobInfo, node: FileNode, clearMap?: boolean) {
 function calcPercent(node: FileNode): number {
     if (!node.children) return 0;
     const count: number = node.child_count || node.children?.length || 0;
-    return node.children.reduce((val, c) => {
-        if (c.info) return val + 1;
-        else if (c.children) return val + calcPercent(c);
-        else return val;
-    }, 0) / count;
+    let total = 0;
+    for (var child of node.children) {
+        if (child.info) total += 1;
+        else if (child.children) total += calcPercent(child);
+    }
+    return total / count;
 }
 
 function calcSize(job: JobInfo, node: FileNode, recurse: boolean) {
@@ -247,7 +248,10 @@ export const jobsSlice = createSlice({
             for (const file of progress.files) updateJobFile(jobCopy, file);
 
             const jobInfo = state.jobs.find(j => j.id === jobCopy.id);
-            if (jobInfo) jobInfo.percent = calcPercent(jobCopy.root);
+            if (jobInfo) {
+                jobInfo.percent = calcPercent(jobCopy.root);
+                console.log('percent: ', jobInfo.percent,);
+            }
 
         },
         "set-state": (state, action) => {
@@ -266,7 +270,8 @@ export const jobsSlice = createSlice({
             job.root = jobCopy.root;
             job.nodeMap = jobCopy.nodeMap;
             job.state = JobState.done;
-            console.log("Job finished: ", job, job.root.info?.size, jobCopy.root.info?.size);
+            job.percent = calcPercent(job.root);
+            console.log("Job finished: ", lodash.cloneDeep(job));
         },
         "remove": (state, action) => {
             const index = state.jobs.findIndex(j => j.id === action.payload.job);
