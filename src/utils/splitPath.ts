@@ -1,8 +1,7 @@
-import { path } from "@tauri-apps/api";
 
-export function splitPath(filepath: string): string[] {
-    if (filepath.charAt(filepath.length - 1) === path.sep) {
+export function splitPath(filepath: string, sep: string): string[] {
+    if (filepath.charAt(filepath.length - 1) === sep) {
         filepath = filepath.substring(0, filepath.length - 1);
     }
-    return filepath.split(path.sep);
+    return filepath.split(sep);
 }

@@ -53,13 +53,13 @@ export default function ContextMenu() {
         shell.open(path);
     }
 
-    function exploreTo(info?: JobFileInfo) {
+    function exploreTo(job: JobInfo, info?: JobFileInfo) {
         handleClose();
         if (!info) return;
         if (info.is_dir)
             shell.open(info.path);
         else {
-            const parentPath = getParentPath(info.path);
+            const parentPath = getParentPath(info.path, job.separator);
             if (parentPath) shell.open(parentPath);
         }
 
@@ -115,7 +115,7 @@ export default function ContextMenu() {
                 <ListItemText>Delete {node.info?.is_dir ? "folder" : "file"}</ListItemText>
             </MenuItem>,
 
-            !node.info ? <React.Fragment /> : <MenuItem key="node-explore" onClick={() => exploreTo(node.info)}>
+            !node.info ? <React.Fragment /> : <MenuItem key="node-explore" onClick={() => exploreTo(job, node.info)}>
                 <ListItemIcon>
                     <Folder fontSize="small" />
                 </ListItemIcon>

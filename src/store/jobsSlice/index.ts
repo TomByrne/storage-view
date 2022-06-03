@@ -39,7 +39,7 @@ const runJobAsync = createAsyncThunk(
 
         const isRoot = path === jobCopy.path;
         const root = jobCopy.nodeMap[path];
-        const parentPath = isRoot ? undefined : getParentPath(path);
+        const parentPath = isRoot ? undefined : getParentPath(path, jobCopy.separator);
         if (isRoot) {
             // root
             clearNode(jobCopy, root);
@@ -136,7 +136,7 @@ export const deleteFilesAsync = createAsyncThunk(
 );
 
 function getParent(job: JobInfo, path: string): FileNode | undefined {
-    const parentPath = getParentPath(path);
+    const parentPath = getParentPath(path, job.separator);
     return parentPath ? job.nodeMap[parentPath] : undefined;
 }
 
@@ -206,25 +206,24 @@ export const jobsSlice = createSlice({
         "create": (state, action) => {
             const id = state.lastJobId++;
             if (action.payload.setCurrent) state.current = state.jobs.length;
-            const path = action.payload.path;
-            const name = getPathName(path);
-            const root = {
-                parent: undefined,
+            const filepath = action.payload.path;
+            const separator = path.sep;
+            const name = getPathName(filepath, separator);
+            const root: FileNode = {
                 name: name,
-                path,
+                path: filepath,
             };
-            const job = {
+            const job: JobInfo = {
                 id,
-                path,
+                path: filepath,
                 state: JobState.invalid,
-                aspectRatio: 1,
                 percent: 0,
                 name: name,
                 root,
-                expandedPaths: [path],
+                expandedPaths: [filepath],
                 selectedPaths: [],
-                hoverPaths: [],
-                nodeMap: { [path]: root },
+                nodeMap: { [filepath]: root },
+                separator,
             }
             state.jobs.push(job);
             console.log("Created new job: ", job);

@@ -47,6 +47,7 @@ export interface JobInfo extends JobBrief {
     expandedPaths: string[],
     selectedPaths: string[],
     nodeMap: Record<string, FileNode>,
+    separator: string, // path separator
 }
 
 export enum JobState {

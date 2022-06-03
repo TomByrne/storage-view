@@ -23,7 +23,7 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
 
     if (file_path !== job.path) {
         // Not root node, find parent
-        const parts = splitPath(file_path);
+        const parts = splitPath(file_path, job.separator);
         if (parts.length < 2) {
             let msg = "Failed to match path: " + file_path;
             console.log(msg);
