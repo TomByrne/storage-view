@@ -148,7 +148,7 @@ export class TreeMapGraph {
     }
 
     commitSize(id: number, node: FileNode, x: number, y: number, w: number, h: number): boolean {
-        if (this.drawId != id) return false;
+        if (this.drawId !== id) return false;
 
         this.rects[node.path] = new Rectangle(x, y, w, h);
 
