@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../store/hooks";
 import { createJob, selectCurrent, selectJobs } from '../../store/jobsSlice';
 import { JobInfo, JobState } from "../../store/jobsSlice/types";
+import "./JobTabs.scss";
 
 const style = {
     flexShrink: 0,
@@ -44,7 +45,9 @@ export default function JobTabs() {
 
     function jobLabel(job: JobInfo): string {
         return `${job.name}` +
-            (job.state === JobState.doing || true ? ` (${Math.round(job.percent * 100)}%)` : "");
+            (` (${(job.root?.info?.time || 0)}s`) +
+            (job.state === JobState.doing || true ? ` ${Math.round(job.percent * 100)}%` : "") +
+            ")";
     }
 
     return <Tabs
@@ -56,7 +59,7 @@ export default function JobTabs() {
             <Tab
                 key={job.id}
                 label={
-                    <span>
+                    <span className="job-tab">
                         {jobLabel(job)}
                         <IconButton
                             component="div"
