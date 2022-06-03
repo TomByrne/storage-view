@@ -1,4 +1,3 @@
-import { path } from "@tauri-apps/api";
 import { splitPath } from "../../utils/splitPath";
 import { FileNode, JobInfo } from "./types";
 
@@ -30,9 +29,17 @@ export function getNode(job: JobInfo, file_name: string, file_path: string, upda
             throw new Error(msg);
         }
 
-        const parent_name = parts[parts.length - 2];
         parts.pop();
-        const parent_path = parts.join(path.sep);
+        let parent_name;
+        let parent_path;
+        if (parts.length > 1) {
+            parent_name = parts[parts.length - 1];
+            parent_path = parts.join(job.separator);
+        } else {
+            // root
+            parent_name = parts[0] + job.separator; // Root level should always have a slash
+            parent_path = parent_name;
+        }
         const parent = getNode(job, parent_name, parent_path, update);
 
         if (!parent.map) parent.map = {};

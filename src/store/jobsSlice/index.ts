@@ -206,7 +206,7 @@ export const jobsSlice = createSlice({
         "create": (state, action) => {
             const id = state.lastJobId++;
             if (action.payload.setCurrent) state.current = state.jobs.length;
-            const filepath = action.payload.path;
+            let filepath = action.payload.path;
             const separator = path.sep;
             const name = getPathName(filepath, separator);
             const root: FileNode = {
@@ -308,7 +308,7 @@ export const jobsSlice = createSlice({
                     do {
                         const parentPath = p.substring(0, ind);
                         if (!expanded.includes(parentPath)) expanded.push(parentPath);
-                    } while ((ind = p.indexOf(path.sep, ind + 1)) !== -1)
+                    } while ((ind = p.indexOf(job.separator, ind + 1)) !== -1)
                 }
                 job.expandedPaths = expanded;
             }
