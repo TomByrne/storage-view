@@ -43,7 +43,7 @@ export class TreeMapGraph {
     root: undefined | FileNode;
     nodeMap: Record<string, Sprite> = {};
     highlit: string[] = [];
-
+    drawId = 0;
 
     container: Sprite = new Sprite();
     outlines: Graphics = new Graphics();
@@ -131,7 +131,9 @@ export class TreeMapGraph {
         }
         if (this.root) {
             this.clear();
-            squarify(this.root, this.app.renderer.width, this.app.renderer.height, (n, x, y, w, h) => this.commitSize(n, x, y, w, h));
+            this.drawId++;
+            let id = this.drawId;
+            squarify(this.root, this.app.renderer.width, this.app.renderer.height, (n, x, y, w, h) => this.commitSize(id, n, x, y, w, h));
         }
     }
 
@@ -145,7 +147,9 @@ export class TreeMapGraph {
         return texture;
     }
 
-    commitSize(node: FileNode, x: number, y: number, w: number, h: number): boolean {
+    commitSize(id: number, node: FileNode, x: number, y: number, w: number, h: number): boolean {
+        if (this.drawId != id) return false;
+
         this.rects[node.path] = new Rectangle(x, y, w, h);
 
         const too_small = Math.sqrt(w * w + h * h) < smallest_area;
